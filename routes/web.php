@@ -11,11 +11,5 @@ Route::get('/', function () {
 });
 
 
-Route::post('/task', [TaskController::class, 'store']);
+Route::post('/task', [TaskController::class, 'store'])->middleware('validate.token');
 Route::post('/tag', [TagController::class, 'store']);
-
-Route::get('/post', [PostController::class, 'index'])->name('main.index1');
-Route::get('/post/create', [PostController::class, 'create']);
-Route::get('/post/update', [PostController::class, 'update']);
-Route::get('/post/delete', [PostController::class, 'delete']);
-Route::get('/test', [PostController::class, 'test']);

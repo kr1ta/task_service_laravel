@@ -9,21 +9,21 @@ class TaskController extends Controller
 {
     public function store(Request $request)
     {
-        // Валидация входных данных
         $validatedData = $request->validate([
-            'id_user' => 'required|integer',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'status' => 'nullable|string',
             'finish_at' => 'nullable|date',
         ]);
 
+        $validatedData = collect($validatedData); // Преобразуем в коллекцию
+
         $task = Task::create([
-            'id_user' => $validatedData['id_user'],
-            'title' => $validatedData['title'],
-            'description' => $validatedData['description'] ?? null,
-            'status' => $validatedData['status'] ?? 'Created',
-            'finish_at' => $validatedData['finish_at'] ?? null,
+            'user_id' => $request->attributes->get('user_id'),
+            'title' => $validatedData->get('title'),
+            'description' => $validatedData->get('description'),
+            'finish_at' => $validatedData->get('finish_at'), // Безопасный доступ
+            'status' => $validatedData->get('status', 'Created'),
         ]);
 
         return response()->json([

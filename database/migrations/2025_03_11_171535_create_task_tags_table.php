@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('task_tags', function (Blueprint $table) {
+        Schema::create('task_tag', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('task_id_task')->constrained('tasks', 'id_task')->onDelete('cascade');            
-            $table->foreignId('tag_id')->constrained();
 
-            $table->softDeletes();
-            
+            $table->foreignId('task_id')->constrained()->onDelete('cascade');
+            $table->foreignId('tag_id')->constrained()->onDelete('cascade');
+
+            $table->timestamp('created_at')->nullable(); 
         });
     }
 

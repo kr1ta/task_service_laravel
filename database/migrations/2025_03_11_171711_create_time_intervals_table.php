@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('time_intervals', function (Blueprint $table) {
             $table->id();  
-            $table->foreignId('task_id_task')->constrained('tasks', 'id_task')->onDelete('cascade');
+
+            $table->foreignId('task_id')->constrained()->onDelete('cascade');
             $table->dateTime('start_at');
-            $table->dateTime('finish_at')->nullable();
+            $table->timestamp('created_at');
 
             $table->softDeletes();
         });

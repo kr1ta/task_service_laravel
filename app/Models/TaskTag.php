@@ -8,11 +8,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TaskTag extends Model
 {
-    use HasFactory;
-    use SoftDeletes;
-    protected $table = 'task_tags';
-    protected $guarded = [];
-
     public function tasks()
     {
         return $this->belongsTo(Task::class);

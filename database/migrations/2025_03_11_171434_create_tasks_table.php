@@ -12,14 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tasks', function (Blueprint $table) {
-            $table->id('id_task');
-            $table->unsignedBigInteger('id_user');            
+            $table->id();
+
+            $table->unsignedBigInteger('user_id');            
             $table->string('title');
             $table->text('description')->nullable();
-            $table->timestamps();
             $table->string('status')->default("Created");
             $table->dateTime('finish_at')->nullable();
 
+            $table->timestamps();
             $table->softDeletes();
         });
     }

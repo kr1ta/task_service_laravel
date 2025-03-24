@@ -31,4 +31,7 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'validate_token' => [
+        'url' => env('VALIDATE_TOKEN_URL', 'http://localhost:8001/api/validate-token'),
+    ],
 ];
