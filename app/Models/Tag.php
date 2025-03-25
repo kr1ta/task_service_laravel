@@ -9,9 +9,10 @@ class Tag extends Model
 {
     use HasFactory;
 
-    /**
-     * Получить все задачи, связанные с тегом.
-     */
+    protected $fillable = ["user_id", "name"];
+
+    public $timestamps = false;
+
     public function tasks()
     {
         return $this->belongsToMany(Task::class);

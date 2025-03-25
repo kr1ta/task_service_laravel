@@ -11,18 +11,17 @@ class TagController extends Controller
     {
         // Валидация входных данных
         $validatedData = $request->validate([
-            'id_user' => 'required|integer',
-            'tag' => 'required|string',
+            'name' => 'required|string',
         ]);
 
         $tag = Tag::create([
-            'id_user' => $validatedData['id_user'],
-            'tag' => $validatedData['tag'],
+            'user_id' => $request->attributes->get('user_id'),
+            'name' => $validatedData['name'],
         ]);
 
         return response()->json([
             'message' => 'Тег успешно создан!',
-            'tag' => $tag,
+            'name' => $tag,
         ], 201);
     }
 }
