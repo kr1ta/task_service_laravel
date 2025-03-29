@@ -17,4 +17,9 @@ class Tag extends Model
     {
         return $this->belongsToMany(Task::class);
     }
+
+    public function habits()
+    {
+        return $this->belongsToMany(Task::class);
+    }
 }

@@ -8,16 +8,16 @@ return new class extends Migration {
 
     public function up(): void
     {
-        Schema::create('task_tags', function (Blueprint $table) {
+        Schema::create('habit_tags', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('task_id')->constrained()->onDelete('cascade');
+            $table->foreignId('habit_id')->constrained()->onDelete('cascade');
             $table->foreignId('tag_id')->constrained()->onDelete('cascade');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('task_tags');
+        Schema::dropIfExists('habit_tags');
     }
 };

@@ -62,7 +62,7 @@ class TimeIntervalController extends Controller
 
         $timeInterval = $timeInterval->fresh();
 
-        $spentTime = Carbon::parse($timeInterval->finish_at)->diffInSeconds(Carbon::parse($timeInterval->start_at));
+        $spentTime = Carbon::parse($timeInterval->finish_at)->diffInMinutes(Carbon::parse($timeInterval->start_at));
 
         return response()->json([
             'message' => 'Time interval stopped successfully.',

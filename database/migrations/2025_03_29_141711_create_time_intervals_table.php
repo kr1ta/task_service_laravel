@@ -4,16 +4,16 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('time_intervals', function (Blueprint $table) {
-            $table->id();  
+            $table->id();
 
-            $table->foreignId('task_id')->constrained()->onDelete('cascade');
+            $table->foreignId('task_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('habit_id')->nullable()->constrained()->onDelete('cascade');
             $table->dateTime('start_at');
-            $table->dateTime('finish_at')->nullable();
+            $table->integer('duration')->comment('In minutes')->nullable();
 
             $table->softDeletes();
         });
