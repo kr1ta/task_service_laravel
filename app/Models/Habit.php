@@ -22,6 +22,6 @@ class Habit extends Model
 
     public function time_intervals()
     {
-        return $this->hasMany(TimeInterval::class);
+        return $this->morphOne(TimeInterval::class, 'intervalable');
     }
 }

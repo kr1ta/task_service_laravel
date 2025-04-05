@@ -9,13 +9,13 @@ return new class extends Migration {
     {
         Schema::create('time_intervals', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('intervalable_id'); // ID связанной записи
+            $table->string('intervalable_type');           // Тип связанной записи (Task или Habit)
+            $table->timestamp('start_time');
+            $table->timestamp('finish_time')->nullable();
+            $table->integer('duration');
 
-            $table->foreignId('task_id')->nullable()->constrained()->onDelete('cascade');
-            $table->foreignId('habit_id')->nullable()->constrained()->onDelete('cascade');
-            $table->dateTime('start_at');
-            $table->integer('duration')->comment('In minutes')->nullable();
-
-            $table->softDeletes();
+            $table->timestamps();
         });
     }
 

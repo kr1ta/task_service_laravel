@@ -16,11 +16,9 @@ return new class extends Migration {
             $table->unsignedBigInteger('user_id');
             $table->string('title');
             $table->text('description')->nullable();
-            $table->enum('status', ['Created', 'In Progress', 'Completed'])->default('Created');
-            $table->dateTime('finish_at')->nullable();
+            $table->enum('status', ['In Progress', 'Completed'])->default('In Progress');
 
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 

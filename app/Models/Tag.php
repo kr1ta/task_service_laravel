@@ -20,6 +20,6 @@ class Tag extends Model
 
     public function habits()
     {
-        return $this->belongsToMany(Task::class);
+        return $this->belongsToMany(Habit::class);
     }
 }

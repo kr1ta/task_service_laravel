@@ -14,7 +14,6 @@ class Task extends Model
         'title',
         'description',
         'status',
-        'finish_at',
     ];
 
     public function tags()
@@ -24,6 +23,6 @@ class Task extends Model
 
     public function time_intervals()
     {
-        return $this->hasMany(TimeInterval::class);
+        return $this->morphMany(TimeInterval::class, 'intervalable');
     }
 }

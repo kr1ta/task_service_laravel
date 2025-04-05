@@ -2,24 +2,26 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class TimeInterval extends Model
 {
     use HasFactory;
-    protected $fillable = ["task_id", "start_at", "finish_at"];
 
-    public $timestamps = false;
+    protected $fillable = [
+        'intervalable_id',
+        'intervalable_type',
+        'start_time',
+        'finish_time',
+        'duration',
+    ];
 
-    public function tasks()
+    public $timestamps = true;
+
+    // Полиморфное отношение
+    public function intervalable()
     {
-        return $this->belongsTo(Task::class);
-    }
-
-    public function habits()
-    {
-        return $this->belongsTo(Task::class);
+        return $this->morphTo();
     }
 }

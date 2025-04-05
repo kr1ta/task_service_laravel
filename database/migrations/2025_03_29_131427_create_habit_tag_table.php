@@ -8,7 +8,7 @@ return new class extends Migration {
 
     public function up(): void
     {
-        Schema::create('habit_tags', function (Blueprint $table) {
+        Schema::create('habit_tag', function (Blueprint $table) {
             $table->id();
 
             $table->foreignId('habit_id')->constrained()->onDelete('cascade');
@@ -18,6 +18,6 @@ return new class extends Migration {
 
     public function down(): void
     {
-        Schema::dropIfExists('habit_tags');
+        Schema::dropIfExists('habit_tag');
     }
 };

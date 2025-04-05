@@ -3,9 +3,11 @@
 namespace App\Providers;
 
 use Illuminate\Auth\Events\Registered;
+use App\Events\IntervalStarted;
+use App\Events\IntervalStopped;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
+use App\Listeners\SendToStatisticsByKafka;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -18,6 +20,15 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
+
+        IntervalStarted::class => [
+            SendToStatisticsByKafka::class,
+        ],
+
+        IntervalStopped::class => [
+            SendToStatisticsByKafka::class,
+        ],
+
     ];
 
     /**
