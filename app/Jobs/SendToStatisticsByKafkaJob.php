@@ -14,38 +14,24 @@ class SendToStatisticsByKafkaJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $interval;
-    public $update_type;
-    public $unspent_time;
-    public $tag_id;
+    public $message;
 
-    public function __construct($interval, $update_type, $unspent_time)
+    public function __construct($message)
     {
-        $this->interval = $interval;
-        $this->update_type = $update_type;
-        $this->unspent_time = $unspent_time;
-        // $this->tag_id = $tag_id;
+        $this->message = $message;
     }
 
     public function handle(): void
     {
-        \Log::info("In the job, type: {$this->update_type}");
         $conf = new Conf();
         $conf->set('metadata.broker.list', 'localhost:9092');
 
         $producer = new Producer($conf);
         $topic = $producer->newTopic('stat');
 
-        \Log::info("unspent time in Job: {$this->unspent_time}");
+        \Log::info("in job, " . json_encode($this->message));
 
-        $message = json_encode([
-            'interval' => $this->interval,
-            'update_type' => $this->update_type,
-            // 'tag_id' => $this->tag_id,
-            'unspent_time' => $this->update_type == 'stop' ? $this->unspent_time : 0,
-        ]);
-
-        $topic->produce(RD_KAFKA_PARTITION_UA, 0, $message);
+        $topic->produce(RD_KAFKA_PARTITION_UA, 0, json_encode($this->message));
 
         while ($producer->getOutQLen() > 0) {
             $producer->poll(50);

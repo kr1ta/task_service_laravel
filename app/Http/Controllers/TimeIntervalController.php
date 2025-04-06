@@ -52,7 +52,17 @@ class TimeIntervalController extends Controller
             'finish_time' => $finishTime,
         ]);
 
-        event(new IntervalStarted($timeInterval));
+        $message = [
+            "intervalable_id" => $id,
+            "duration" => $duration,
+            "intervalable_type" => $modelClass,
+            "type" => $type,
+            "user_id" => $request->attributes->get('user_id'),
+            "unspent_time" => 0,
+            "update_type" => "start",
+        ];
+
+        event(new IntervalStarted($message));
 
         return response()->json([
             'message' => 'Time interval started successfully.',
@@ -95,7 +105,17 @@ class TimeIntervalController extends Controller
             'duration' => $spentTime,
         ]);
 
-        event(new IntervalStopped($timeInterval, $unspentTime));
+        $message = [
+            "intervalable_id" => $id,
+            "duration" => $spentTime,
+            "intervalable_type" => $modelClass,
+            "type" => $type,
+            "user_id" => $request->attributes->get('user_id'),
+            "unspent_time" => $unspentTime,
+            "update_type" => "stop",
+        ];
+
+        event(new IntervalStopped($message));
 
         return response()->json([
             'message' => 'Time interval stopped successfully.',

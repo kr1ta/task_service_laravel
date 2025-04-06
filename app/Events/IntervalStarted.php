@@ -14,13 +14,11 @@ class IntervalStarted
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $interval;
-    public $unspent_time = 0;
-    public $update_type = 'start';
+    public $message;
 
-    public function __construct($interval)
+    public function __construct($message)
     {
         \Log::info("In the IntervalStarted event");
-        $this->interval = $interval;
+        $this->message = $message;
     }
 }
