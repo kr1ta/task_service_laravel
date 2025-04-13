@@ -13,12 +13,14 @@ class TimeIntervalController extends Controller
 {
     public function start(Request $request, $type, $id)
     {
+        // Валидация входных данных
         $validatedData = $request->validate([
             'duration' => 'required|integer',
         ]);
 
         \Log::info("request: {$request}");
 
+        // Проверка поддерживаемого типа и существования объекта
         if (!$this->isSupportedType($type)) {
             return $this->handleErrorResponse('Unsupported type or object does not exist.', 400);
         }
@@ -29,6 +31,7 @@ class TimeIntervalController extends Controller
 
         $modelClass = TypeResolver::getModelClass($type);
 
+        // Проверка активного интервала
         $timeInterval = TimeInterval::where('intervalable_id', $id)
             ->where('intervalable_type', $modelClass)
             ->latest('start_time')
@@ -40,6 +43,7 @@ class TimeIntervalController extends Controller
             }
         }
 
+        // Создание нового интервала
         $startTime = now();
         $duration = $validatedData['duration'];
         $finishTime = $startTime->copy()->addSeconds($duration);
@@ -52,6 +56,20 @@ class TimeIntervalController extends Controller
             'finish_time' => $finishTime,
         ]);
 
+        // Получение тегов из связанного объекта
+        $modelInstance = $modelClass::find($id);
+        $tags = $modelInstance->tags ?? []; // Предполагается, что tags - это коллекция
+
+        // Формирование tag_stats
+        $tagStats = [];
+        foreach ($tags as $tag) {
+            $tagStats[$tag->id] = [
+                'time' => $duration, // Время для start всегда равно duration
+                'interval_amount' => 1, // Увеличиваем количество интервалов на 1
+            ];
+        }
+
+        // Формирование сообщения для события
         $message = [
             "intervalable_id" => $id,
             "duration" => $duration,
@@ -60,8 +78,12 @@ class TimeIntervalController extends Controller
             "user_id" => $request->attributes->get('user_id'),
             "unspent_time" => 0,
             "update_type" => "start",
+            "tag_stats" => $tagStats, // Добавляем tag_stats
         ];
 
+        \Log::info(json_encode($message, JSON_PRETTY_PRINT));
+
+        // Отправка события
         event(new IntervalStarted($message));
 
         return response()->json([
@@ -72,6 +94,7 @@ class TimeIntervalController extends Controller
 
     public function stop(Request $request, $type, $id)
     {
+        // Проверка поддерживаемого типа и существования объекта
         if (!$this->isSupportedType($type)) {
             return $this->handleErrorResponse('Unsupported type or object does not exist.', 400);
         }
@@ -82,29 +105,43 @@ class TimeIntervalController extends Controller
 
         $modelClass = TypeResolver::getModelClass($type);
 
-        $intervalableValue = $modelClass::find($id);
-        $inervalableTagId = $intervalableValue->tag_id;
-        \Log::info("tag_id: {$inervalableTagId}");
-
+        // Получение активного интервала
         $timeInterval = TimeInterval::where('intervalable_id', $id)
             ->where('intervalable_type', $modelClass)
             ->latest('start_time')
             ->first();
 
-        if (!$timeInterval or $this->isIntervalCompletedByDuration($timeInterval)) {
+        if (!$timeInterval || $this->isIntervalCompletedByDuration($timeInterval)) {
             return $this->handleErrorResponse('No active time interval found for the given object.', 404);
         }
 
+        // Вычисление затраченного времени и остатка
         $spentTime = now()->diffInSeconds($timeInterval->start_time);
-
         $unspentTime = $timeInterval->duration - $spentTime;
-        \Log::info("unspent time in controller: {$unspentTime}");
 
+        // Обновление интервала
         $timeInterval->update([
             'finish_time' => now(),
             'duration' => $spentTime,
         ]);
 
+        // Получение тегов из связанного объекта
+        $modelInstance = $modelClass::find($id);
+        $tags = $modelInstance->tags ?? []; // Предполагается, что tags - это коллекция
+
+        // Определение раннего завершения
+        $expectedFinishTime = $this->getExpectedFinishTime($timeInterval);
+
+        // Формирование tag_stats
+        $tagStats = [];
+        foreach ($tags as $tag) {
+            $tagStats[$tag->id] = [
+                'time' => $spentTime, // Время для stop равно затраченному времени
+                'interval_amount' => 0, // Количество интервалов не увеличивается при stop
+            ];
+        }
+
+        // Формирование сообщения для события
         $message = [
             "intervalable_id" => $id,
             "duration" => $spentTime,
@@ -113,8 +150,13 @@ class TimeIntervalController extends Controller
             "user_id" => $request->attributes->get('user_id'),
             "unspent_time" => $unspentTime,
             "update_type" => "stop",
+            "tag_stats" => $tagStats,
+            "early_completed" => true, // флаг раннего завершения
         ];
 
+        \Log::info(json_encode($message, JSON_PRETTY_PRINT));
+
+        // Отправка события
         event(new IntervalStopped($message));
 
         return response()->json([
@@ -122,7 +164,6 @@ class TimeIntervalController extends Controller
             'time_interval' => $timeInterval->fresh(),
         ], 200);
     }
-
     private function handleErrorResponse($message, $code)
     {
         return response()->json([
