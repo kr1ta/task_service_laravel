@@ -42,6 +42,12 @@ class HabitController extends Controller
     {
         $habit = Habit::find($id);
 
+        if (!$habit) {
+            return response()->json([
+                'message' => 'Habit not found'
+            ], 404);
+        }
+
         return response()->json($habit, 200);
     }
 }

@@ -8,11 +8,6 @@ use App\Http\Controllers\HabitController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TimeIntervalController;
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-
 Route::middleware(['validate.token'])->group(function () {
     // создание
     Route::post('/task', [TaskController::class, 'create']);

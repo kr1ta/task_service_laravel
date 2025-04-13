@@ -41,6 +41,12 @@ class TagController extends Controller
     {
         $tag = Tag::find($id);
 
+        if (!$tag) {
+            return response()->json([
+                'message' => 'Tag not found'
+            ], 404);
+        }
+
         return response()->json($tag, 200);
     }
 
@@ -53,6 +59,12 @@ class TagController extends Controller
 
         $tags = $model->tags;
 
+        if (!$tags) {
+            return response()->json([
+                'message' => 'Tags not found'
+            ], 404);
+        }
+
         return response()->json($tags, 200);
     }
 
@@ -60,14 +72,33 @@ class TagController extends Controller
     {
         $modelClass = TypeResolver::getModelClass($type);
 
+        if (!$modelClass) {
+            return response()->json([
+                'message' => 'Invalid type provided'
+            ], 400);
+        }
+
         $model = $modelClass::find($id);
+
+        if (!$model) {
+            return response()->json([
+                'message' => ucfirst($type) . ' not found'
+            ], 404);
+        }
+
         $tag = Tag::find($tag_id);
 
-        if ($model && $tag) {
-            $model->tags()->attach($tag->id);
-
-            return response()->json($model->tags()->get(), 200);
+        if (!$tag) {
+            return response()->json([
+                'message' => 'Tag not found'
+            ], 404);
         }
+
+        $model->tags()->syncWithoutDetaching($tag->id); // если тег уже прикреплен то ничего не делаем
+
+        return response()->json([
+            'message' => 'Tag attached successfully to ' . ucfirst($type),
+        ], 200);
     }
 
     public function detach(Request $request, $type, $id, $tag_id)
@@ -75,7 +106,20 @@ class TagController extends Controller
         $modelClass = TypeResolver::getModelClass($type);
 
         $model = $modelClass::find($id);
+
+        if (!$model) {
+            return response()->json([
+                'message' => ucfirst($type) . ' not found'
+            ], 404);
+        }
+
         $tag = Tag::find($tag_id);
+
+        if (!$tag) {
+            return response()->json([
+                'message' => 'Tag not found'
+            ], 404);
+        }
 
         if ($model && $tag) {
             $model->tags()->detach($tag_id);
@@ -89,6 +133,12 @@ class TagController extends Controller
         $allModels = [];
 
         $tag = Tag::find($tag_id);
+
+        if (!$tag) {
+            return response()->json([
+                'message' => 'Tag not found'
+            ], 404);
+        }
 
         // $allModels['tasks'] = $tag->tasks()->get();
         // $allModels['habits'] = $tag->habits()->get();
