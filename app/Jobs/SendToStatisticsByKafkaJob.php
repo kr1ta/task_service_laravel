@@ -24,7 +24,7 @@ class SendToStatisticsByKafkaJob implements ShouldQueue
     public function handle(): void
     {
         $conf = new Conf();
-        $conf->set('metadata.broker.list', 'localhost:9092');
+        $conf->set('metadata.broker.list', env('KAFKA_BROKER'));
 
         $producer = new Producer($conf);
         $topic = $producer->newTopic('stat');
