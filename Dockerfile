@@ -17,14 +17,11 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Копирование исходного кода (с учетом .dockerignore)
 WORKDIR /var/www/html
 COPY . .
-COPY .env /var/www/html/.env
 
 # Установка зависимостей
 RUN composer install --no-dev --optimize-autoloader
 
-# Публикация конфигураций Laravel
-RUN php artisan config:cache
-RUN php artisan route:cache
+RUN php artisan config:clear
 
 # Открытие порта
 EXPOSE 8000
