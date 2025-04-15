@@ -1,5 +1,5 @@
 # Базовый образ PHP
-FROM php:8.2-fpm
+FROM php:8.4-fpm
 
 # Установка необходимых расширений
 RUN apt-get update && apt-get install -y \
@@ -17,6 +17,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Копирование исходного кода (с учетом .dockerignore)
 WORKDIR /var/www/html
 COPY . .
+COPY .env /var/www/html/.env
 
 # Установка зависимостей
 RUN composer install --no-dev --optimize-autoloader
