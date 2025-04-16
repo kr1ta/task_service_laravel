@@ -18,7 +18,7 @@ class MyKafkaConsumer extends Command
     {
         $conf = new Conf();
         $conf->set('group.id', 'task_service_group');
-        $conf->set('metadata.broker.list', 'localhost:9092');
+        $conf->set('metadata.broker.list', env('KAFKA_BROKER'));
         $conf->set('auto.offset.reset', 'earliest');
 
         $consumer = new KafkaConsumer($conf);
