@@ -17,11 +17,11 @@ class TimeIntervalFactory extends Factory
         }
 
         return [
-            'task_id' => $task_id,
-            'habit_id' => $task_id ? null : $habit_id,
-            'start_at' => $this->faker->dateTimeBetween('-1 month', '-1 day'),
+            #'task_id' => $task_id,
+            #'habit_id' => $task_id ? null : $habit_id,
+            'start_time' => $this->faker->dateTimeBetween('-1 month', '-1 day'),
             'duration' => $duration,
-            'deleted_at' => null,
+            #'deleted_at' => null,
         ];
     }
 }
