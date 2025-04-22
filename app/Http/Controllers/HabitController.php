@@ -11,10 +11,7 @@ class HabitController extends Controller
     public function create(Request $request)
     {
         try {
-            $validatedData = $request->validate([
-                'title' => 'required|string|max:255',
-                'description' => 'nullable|string',
-            ]);
+            $validatedData = $this->validateHabitData($request);
 
             $habit = Habit::create([
                 'user_id' => $request->attributes->get('user_id'),
@@ -22,20 +19,9 @@ class HabitController extends Controller
                 'description' => $validatedData['description'] ?? null,
             ]);
 
-            return response()->json([
-                'data' => new HabitResource($habit),
-                'errors' => [],
-            ]);
+            return $this->successResponse(new HabitResource($habit));
         } catch (\Exception $e) {
-            return response()->json([
-                'data' => null,
-                'errors' => [
-                    [
-                        'code' => 'validation_error',
-                        'message' => $e->getMessage(),
-                    ],
-                ],
-            ], 400);
+            return $this->errorResponse('validation_error', $e->getMessage(), 400);
         }
     }
 
@@ -47,20 +33,9 @@ class HabitController extends Controller
 
             $habits = Habit::where('user_id', $userId)->get();
 
-            return response()->json([
-                'data' => HabitResource::collection($habits),
-                'errors' => [],
-            ]);
+            return $this->successResponse(HabitResource::collection($habits));
         } catch (\Exception $e) {
-            return response()->json([
-                'data' => [],
-                'errors' => [
-                    [
-                        'code' => 'server_error',
-                        'message' => $e->getMessage(),
-                    ],
-                ],
-            ], 500);
+            return $this->errorResponse('server_error', $e->getMessage(), 500);
         }
     }
 
@@ -70,31 +45,24 @@ class HabitController extends Controller
             $habit = Habit::find($id);
 
             if (! $habit) {
-                return response()->json([
-                    'data' => null,
-                    'errors' => [
-                        [
-                            'code' => 'not_found',
-                            'message' => 'Habit not found',
-                        ],
-                    ],
-                ], 404);
+                return $this->errorResponse('not_found', 'Habit not found', 404);
             }
 
-            return response()->json([
-                'data' => new HabitResource($habit),
-                'errors' => [],
-            ]);
+            if ($habit->user_id !== $request->attributes->get('user_id')) {
+                return $this->errorResponse('access_denied', 'You do not have permission to access this habit', 403);
+            }
+
+            return $this->successResponse(new HabitResource($habit));
         } catch (\Exception $e) {
-            return response()->json([
-                'data' => null,
-                'errors' => [
-                    [
-                        'code' => 'server_error',
-                        'message' => $e->getMessage(),
-                    ],
-                ],
-            ], 500);
+            return $this->errorResponse('server_error', $e->getMessage(), 500);
         }
+    }
+
+    private function validateHabitData(Request $request)
+    {
+        return $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
     }
 }

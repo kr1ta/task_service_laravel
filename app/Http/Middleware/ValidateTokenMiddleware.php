@@ -14,9 +14,7 @@ class ValidateTokenMiddleware
         $token = $request->bearerToken();
 
         if (! $token) {
-            return response()->json([
-                'message' => 'Токен не предоставлен',
-            ], 401);
+            return $this->errorResponse('data_missing', 'Token not provided', 401);
         }
 
         $url = Config::get('services.validate_token.url');
@@ -27,16 +25,15 @@ class ValidateTokenMiddleware
                 'Content-Type' => 'application/json',
             ])->get($url);
 
+            // Проверка статуса ответа и валидности токена
             if ($response->status() !== 200 || ! $response->json('valid')) {
-                return response()->json($response->json(), 403);
+                return $this->errorResponse('invalid_token', 'Invalid or expired token', 403);
             }
 
             $userId = $response->json('user_id');
 
             if (! $userId) {
-                return response()->json([
-                    'message' => 'Не удалось получить ID пользователя',
-                ], 500);
+                return $this->errorResponse('not_found', 'Failed to retrieve user ID', 500);
             }
 
             // Добавление user_id в запрос для дальнейшего использования
@@ -45,10 +42,20 @@ class ValidateTokenMiddleware
             return $next($request);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Ошибка при проверке токена',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse('validation_error', 'Token validation error: '.$e->getMessage(), 500);
         }
+    }
+
+    private function errorResponse(string $code, string $message, int $statusCode)
+    {
+        return response()->json([
+            'data' => null,
+            'errors' => [
+                [
+                    'code' => $code,
+                    'message' => $message,
+                ],
+            ],
+        ], $statusCode);
     }
 }

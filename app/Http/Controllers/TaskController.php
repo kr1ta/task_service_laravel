@@ -12,11 +12,7 @@ class TaskController extends Controller
     public function create(Request $request)
     {
         try {
-            $validatedData = $request->validate([
-                'title' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'status' => 'nullable|string',
-            ]);
+            $validatedData = $this->validateTaskData($request);
 
             $task = Task::create([
                 'user_id' => $request->attributes->get('user_id'),
@@ -27,20 +23,9 @@ class TaskController extends Controller
 
             // event(new TaskCreated($task));
 
-            return response()->json([
-                'data' => new TaskResource($task),
-                'errors' => [],
-            ]);
+            return $this->successResponse(new TaskResource($task));
         } catch (\Exception $e) {
-            return response()->json([
-                'data' => null,
-                'errors' => [
-                    [
-                        'code' => 'validation_error',
-                        'message' => $e->getMessage(),
-                    ],
-                ],
-            ], 400);
+            return $this->errorResponse('validation_error', $e->getMessage(), 400);
         }
     }
 
@@ -53,20 +38,9 @@ class TaskController extends Controller
                 ->with('tags')
                 ->get();
 
-            return response()->json([
-                'data' => TaskResource::collection($tasks),
-                'errors' => [],
-            ]);
+            return $this->successResponse(TaskResource::collection($tasks));
         } catch (\Exception $e) {
-            return response()->json([
-                'data' => [],
-                'errors' => [
-                    [
-                        'code' => 'server_error',
-                        'message' => $e->getMessage(),
-                    ],
-                ],
-            ], 500);
+            return $this->errorResponse('server_error', $e->getMessage(), 500);
         }
     }
 
@@ -76,31 +50,25 @@ class TaskController extends Controller
             $task = Task::find($id);
 
             if (! $task) {
-                return response()->json([
-                    'data' => null,
-                    'errors' => [
-                        [
-                            'code' => 'not_found',
-                            'message' => 'Task not found',
-                        ],
-                    ],
-                ], 404);
+                return $this->errorResponse('not_found', 'Task not found', 404);
             }
 
-            return response()->json([
-                'data' => new TaskResource($task),
-                'errors' => [],
-            ]);
+            if ($task->user_id !== $request->attributes->get('user_id')) {
+                return $this->errorResponse('access_denied', 'You do not have permission to access this task', 403);
+            }
+
+            return $this->successResponse(new TaskResource($task));
         } catch (\Exception $e) {
-            return response()->json([
-                'data' => null,
-                'errors' => [
-                    [
-                        'code' => 'server_error',
-                        'message' => $e->getMessage(),
-                    ],
-                ],
-            ], 500);
+            return $this->errorResponse('server_error', $e->getMessage(), 500);
         }
+    }
+
+    private function validateTaskData(Request $request)
+    {
+        return $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'nullable|string',
+        ]);
     }
 }

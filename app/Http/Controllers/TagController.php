@@ -12,9 +12,7 @@ class TagController extends Controller
     public function create(Request $request)
     {
         try {
-            $validatedData = $request->validate([
-                'name' => 'required|string',
-            ]);
+            $validatedData = $this->validateTagData($request);
 
             $tag = Tag::create([
                 'user_id' => $request->attributes->get('user_id'),
@@ -23,20 +21,9 @@ class TagController extends Controller
 
             \Log::info("in the tag create: {$tag}");
 
-            return response()->json([
-                'data' => new TagResource($tag),
-                'errors' => [],
-            ]);
+            return $this->successResponse(new TagResource($tag));
         } catch (\Exception $e) {
-            return response()->json([
-                'data' => null,
-                'errors' => [
-                    [
-                        'code' => 'validation_error',
-                        'message' => $e->getMessage(),
-                    ],
-                ],
-            ], 400);
+            return $this->errorResponse('validation_error', $e->getMessage(), 400);
         }
     }
 
@@ -47,20 +34,9 @@ class TagController extends Controller
 
             $tags = Tag::where('user_id', $userId)->get();
 
-            return response()->json([
-                'data' => TagResource::collection($tags),
-                'errors' => [],
-            ]);
+            return $this->successResponse(TagResource::collection($tags));
         } catch (\Exception $e) {
-            return response()->json([
-                'data' => [],
-                'errors' => [
-                    [
-                        'code' => 'server_error',
-                        'message' => $e->getMessage(),
-                    ],
-                ],
-            ], 500);
+            return $this->errorResponse('server_error', $e->getMessage(), 500);
         }
     }
 
@@ -70,31 +46,16 @@ class TagController extends Controller
             $tag = Tag::find($id);
 
             if (! $tag) {
-                return response()->json([
-                    'data' => null,
-                    'errors' => [
-                        [
-                            'code' => 'not_found',
-                            'message' => 'Tag not found',
-                        ],
-                    ],
-                ], 404);
+                return $this->errorResponse('not_found', 'Tag not found', 404);
             }
 
-            return response()->json([
-                'data' => new TagResource($tag),
-                'errors' => [],
-            ]);
+            if ($tag->user_id !== $request->attributes->get('user_id')) {
+                return $this->errorResponse('access_denied', 'You do not have permission to access this tag', 403);
+            }
+
+            return $this->successResponse(new TagResource($tag));
         } catch (\Exception $e) {
-            return response()->json([
-                'data' => null,
-                'errors' => [
-                    [
-                        'code' => 'server_error',
-                        'message' => $e->getMessage(),
-                    ],
-                ],
-            ], 500);
+            return $this->errorResponse('server_error', $e->getMessage(), 500);
         }
     }
 
@@ -106,45 +67,18 @@ class TagController extends Controller
             $model = $modelClass::find($id);
 
             if (! $model) {
-                return response()->json([
-                    'data' => null,
-                    'errors' => [
-                        [
-                            'code' => 'not_found',
-                            'message' => ucfirst($type).' not found',
-                        ],
-                    ],
-                ], 404);
+                return $this->errorResponse('not_found', ucfirst($type).' not found', 404);
             }
 
             $tags = $model->tags;
 
             if ($tags->isEmpty()) {
-                return response()->json([
-                    'data' => [],
-                    'errors' => [
-                        [
-                            'code' => 'not_found',
-                            'message' => 'Tags not found',
-                        ],
-                    ],
-                ], 404);
+                return $this->errorResponse('not_found', 'Tags not found', 404);
             }
 
-            return response()->json([
-                'data' => TagResource::collection($tags),
-                'errors' => [],
-            ]);
+            return $this->successResponse(TagResource::collection($tags));
         } catch (\Exception $e) {
-            return response()->json([
-                'data' => null,
-                'errors' => [
-                    [
-                        'code' => 'server_error',
-                        'message' => $e->getMessage(),
-                    ],
-                ],
-            ], 500);
+            return $this->errorResponse('server_error', $e->getMessage(), 500);
         }
     }
 
@@ -154,63 +88,28 @@ class TagController extends Controller
             $modelClass = TypeResolver::getModelClass($type);
 
             if (! $modelClass) {
-                return response()->json([
-                    'data' => null,
-                    'errors' => [
-                        [
-                            'code' => 'invalid_input',
-                            'message' => 'Invalid type provided',
-                        ],
-                    ],
-                ], 400);
+                return $this->errorResponse('invalid_input', 'Invalid type provided', 400);
             }
 
             $model = $modelClass::find($id);
 
             if (! $model) {
-                return response()->json([
-                    'data' => null,
-                    'errors' => [
-                        [
-                            'code' => 'not_found',
-                            'message' => ucfirst($type).' not found',
-                        ],
-                    ],
-                ], 404);
+                return $this->errorResponse('not_found', ucfirst($type).' not found', 404);
             }
 
             $tag = Tag::find($tag_id);
 
             if (! $tag) {
-                return response()->json([
-                    'data' => null,
-                    'errors' => [
-                        [
-                            'code' => 'not_found',
-                            'message' => 'Tag not found',
-                        ],
-                    ],
-                ], 404);
+                return $this->errorResponse('not_found', 'Tag not found', 404);
             }
 
             $model->tags()->syncWithoutDetaching($tag->id);
 
-            return response()->json([
-                'data' => [
-                    'message' => 'Tag attached successfully to '.ucfirst($type),
-                ],
-                'errors' => [],
+            return $this->successResponse([
+                'message' => 'Tag attached successfully to '.ucfirst($type),
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'data' => null,
-                'errors' => [
-                    [
-                        'code' => 'server_error',
-                        'message' => $e->getMessage(),
-                    ],
-                ],
-            ], 500);
+            return $this->errorResponse('server_error', $e->getMessage(), 500);
         }
     }
 
@@ -222,47 +121,20 @@ class TagController extends Controller
             $model = $modelClass::find($id);
 
             if (! $model) {
-                return response()->json([
-                    'data' => null,
-                    'errors' => [
-                        [
-                            'code' => 'not_found',
-                            'message' => ucfirst($type).' not found',
-                        ],
-                    ],
-                ], 404);
+                return $this->errorResponse('not_found', ucfirst($type).' not found', 404);
             }
 
             $tag = Tag::find($tag_id);
 
             if (! $tag) {
-                return response()->json([
-                    'data' => null,
-                    'errors' => [
-                        [
-                            'code' => 'not_found',
-                            'message' => 'Tag not found',
-                        ],
-                    ],
-                ], 404);
+                return $this->errorResponse('not_found', 'Tag not found', 404);
             }
 
             $model->tags()->detach($tag_id);
 
-            return response()->json([
-                'data' => TagResource::collection($model->tags()->get()),
-                'errors' => [],
-            ]);
+            return $this->successResponse(TagResource::collection($model->tags()->get()));
         } catch (\Exception $e) {
-            return response()->json([
-                'data' => null,
-                'errors' => [
-                    [
-                        'code' => 'server_error',
-                        'message' => $e->getMessage(),
-                    ],
-                ],
-            ], 500);
+            return $this->errorResponse('server_error', $e->getMessage(), 500);
         }
     }
 
@@ -274,15 +146,7 @@ class TagController extends Controller
             $tag = Tag::find($tag_id);
 
             if (! $tag) {
-                return response()->json([
-                    'data' => null,
-                    'errors' => [
-                        [
-                            'code' => 'not_found',
-                            'message' => 'Tag not found',
-                        ],
-                    ],
-                ], 404);
+                return $this->errorResponse('not_found', 'Tag not found', 404);
             }
 
             foreach (TypeResolver::allTypes() as $type => $modelClass) {
@@ -290,20 +154,16 @@ class TagController extends Controller
                 $allModels[$type] = $tag->$relationName()->get();
             }
 
-            return response()->json([
-                'data' => $allModels,
-                'errors' => [],
-            ]);
+            return $this->successResponse($allModels);
         } catch (\Exception $e) {
-            return response()->json([
-                'data' => null,
-                'errors' => [
-                    [
-                        'code' => 'server_error',
-                        'message' => $e->getMessage(),
-                    ],
-                ],
-            ], 500);
+            return $this->errorResponse('server_error', $e->getMessage(), 500);
         }
+    }
+
+    private function validateTagData(Request $request)
+    {
+        return $request->validate([
+            'name' => 'required|string',
+        ]);
     }
 }

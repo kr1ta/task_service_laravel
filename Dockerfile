@@ -1,7 +1,5 @@
-# Базовый образ PHP
 FROM php:8.4-fpm
 
-# Установка необходимых расширений
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     librdkafka-dev \
@@ -11,17 +9,16 @@ RUN apt-get update && apt-get install -y \
     && pecl install rdkafka \
     && docker-php-ext-enable rdkafka
 
-# Установка Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Копирование исходного кода (с учетом .dockerignore)
 WORKDIR /var/www/html
-COPY . .
 
-# Установка зависимостей
+# Копирование исходного кода (с учетом .dockerignore)
+COPY . .
+RUN cp .env.example .env
+
 RUN composer install --no-dev --optimize-autoloader
 
 RUN php artisan config:clear
 
-# Открытие порта
 EXPOSE 8000

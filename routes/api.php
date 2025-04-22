@@ -17,6 +17,10 @@ Route::middleware(['validate.token'])->group(function () {
     Route::get('/habit/{id}', [HabitController::class, 'show']);
     Route::get('/tag/{id}', [TagController::class, 'show']);
 
+    Route::delete('/task/{id}', [TaskController::class, 'delete']);
+    Route::delete('/habit/{id}', [HabitController::class, 'delete']);
+    Route::delete('/tag/{id}', [TagController::class, 'delete']);
+
     // Запуск таймера
     Route::post('/{type}/{task_id}/start', [TimeIntervalController::class, 'start']);
     Route::post('/{type}/{task_id}/stop', [TimeIntervalController::class, 'stop']);
