@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Habit;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class HabitTagFactory extends Factory
 {

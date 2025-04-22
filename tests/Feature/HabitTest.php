@@ -1,8 +1,7 @@
 <?php
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
-use App\Models\Habit; // Импортируем модель Habit
+use App\Models\Habit;
+use Illuminate\Support\Facades\Http; // Импортируем модель Habit
 
 test('habit creation returns 201 status', function () {
     // Мокируем HTTP-запрос к сервису авторизации

@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Resources\HabitResource;
 use App\Models\Habit;
+use Illuminate\Http\Request;
 
 class HabitController extends Controller
 {
@@ -16,16 +17,13 @@ class HabitController extends Controller
 
         $validatedData = collect($validatedData); // Преобразуем в коллекцию
 
-        $task = Habit::create([
+        $habit = Habit::create([
             'user_id' => $request->attributes->get('user_id'),
             'title' => $validatedData->get('title'),
             'description' => $validatedData->get('description'),
         ]);
 
-        return response()->json([
-            'message' => 'Привычка успешно создана!',
-            'task' => $task,
-        ], 201);
+        return new HabitResource($habit);
     }
 
     public function index(Request $request)
@@ -35,19 +33,19 @@ class HabitController extends Controller
 
         $habits = Habit::where('user_id', $userId)->get();
 
-        return response()->json($habits, 200);
+        return HabitResource::collection($habits);
     }
 
     public function show(Request $request, $id)
     {
         $habit = Habit::find($id);
 
-        if (!$habit) {
+        if (! $habit) {
             return response()->json([
-                'message' => 'Habit not found'
+                'message' => 'Habit not found',
             ], 404);
         }
 
-        return response()->json($habit, 200);
+        return new HabitResource($habit);
     }
 }

@@ -3,9 +3,9 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Http;
 
 class ValidateTokenMiddleware
 {
@@ -13,7 +13,7 @@ class ValidateTokenMiddleware
     {
         $token = $request->bearerToken();
 
-        if (!$token) {
+        if (! $token) {
             return response()->json([
                 'message' => 'Токен не предоставлен',
             ], 401);
@@ -23,17 +23,17 @@ class ValidateTokenMiddleware
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $token,
+                'Authorization' => 'Bearer '.$token,
                 'Content-Type' => 'application/json',
             ])->get($url);
 
-            if ($response->status() !== 200 || !$response->json('valid')) {
+            if ($response->status() !== 200 || ! $response->json('valid')) {
                 return response()->json($response->json(), 403);
             }
 
             $userId = $response->json('user_id');
 
-            if (!$userId) {
+            if (! $userId) {
                 return response()->json([
                     'message' => 'Не удалось получить ID пользователя',
                 ], 500);

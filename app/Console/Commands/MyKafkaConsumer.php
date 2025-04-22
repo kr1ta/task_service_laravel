@@ -2,21 +2,21 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Habit;
+use App\Models\Task;
 use Illuminate\Console\Command;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
 
-use App\Models\Task;
-use App\Models\Habit;
-
 class MyKafkaConsumer extends Command
 {
     protected $signature = 'kafka:consume';
+
     protected $description = 'Consume messages from Kafka';
 
     public function handle()
     {
-        $conf = new Conf();
+        $conf = new Conf;
         $conf->set('group.id', 'task_service_group');
         $conf->set('metadata.broker.list', env('KAFKA_BROKER'));
         $conf->set('auto.offset.reset', 'earliest');

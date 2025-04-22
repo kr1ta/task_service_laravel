@@ -1,10 +1,9 @@
 <?php
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
+use App\Models\Habit;
 use App\Models\Tag;
 use App\Models\Task;
-use App\Models\Habit;
+use Illuminate\Support\Facades\Http;
 
 test('tag creation returns 201 status', function () {
     // Мокируем HTTP-запрос к сервису авторизации
@@ -97,7 +96,6 @@ test('tags can be listed', function () {
     $response->assertJsonCount(3);
 });
 
-
 test('tag not found returns 404', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
@@ -163,7 +161,6 @@ test('attach fails if tag or task does not exist', function () {
     // Проверяем, что ответ имеет статус 404 (Not Found)
     $response->assertStatus(404);
 });
-
 
 test('tag can be detached from a task', function () {
     // Мокируем HTTP-запрос к сервису авторизации
@@ -234,7 +231,6 @@ test('tags list returns all models', function () {
         ]],
     ]);
 });
-
 
 test('tags can be retrieved for a task', function () {
     // Мокируем HTTP-запрос к сервису авторизации
