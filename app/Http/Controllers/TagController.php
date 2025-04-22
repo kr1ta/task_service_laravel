@@ -69,7 +69,7 @@ class TagController extends Controller
         try {
             $tag = Tag::find($id);
 
-            if (!$tag) {
+            if (! $tag) {
                 return response()->json([
                     'data' => null,
                     'errors' => [
@@ -105,13 +105,13 @@ class TagController extends Controller
 
             $model = $modelClass::find($id);
 
-            if (!$model) {
+            if (! $model) {
                 return response()->json([
                     'data' => null,
                     'errors' => [
                         [
                             'code' => 'not_found',
-                            'message' => ucfirst($type) . ' not found',
+                            'message' => ucfirst($type).' not found',
                         ],
                     ],
                 ], 404);
@@ -153,7 +153,7 @@ class TagController extends Controller
         try {
             $modelClass = TypeResolver::getModelClass($type);
 
-            if (!$modelClass) {
+            if (! $modelClass) {
                 return response()->json([
                     'data' => null,
                     'errors' => [
@@ -167,13 +167,13 @@ class TagController extends Controller
 
             $model = $modelClass::find($id);
 
-            if (!$model) {
+            if (! $model) {
                 return response()->json([
                     'data' => null,
                     'errors' => [
                         [
                             'code' => 'not_found',
-                            'message' => ucfirst($type) . ' not found',
+                            'message' => ucfirst($type).' not found',
                         ],
                     ],
                 ], 404);
@@ -181,7 +181,7 @@ class TagController extends Controller
 
             $tag = Tag::find($tag_id);
 
-            if (!$tag) {
+            if (! $tag) {
                 return response()->json([
                     'data' => null,
                     'errors' => [
@@ -197,7 +197,7 @@ class TagController extends Controller
 
             return response()->json([
                 'data' => [
-                    'message' => 'Tag attached successfully to ' . ucfirst($type),
+                    'message' => 'Tag attached successfully to '.ucfirst($type),
                 ],
                 'errors' => [],
             ]);
@@ -221,13 +221,13 @@ class TagController extends Controller
 
             $model = $modelClass::find($id);
 
-            if (!$model) {
+            if (! $model) {
                 return response()->json([
                     'data' => null,
                     'errors' => [
                         [
                             'code' => 'not_found',
-                            'message' => ucfirst($type) . ' not found',
+                            'message' => ucfirst($type).' not found',
                         ],
                     ],
                 ], 404);
@@ -235,7 +235,7 @@ class TagController extends Controller
 
             $tag = Tag::find($tag_id);
 
-            if (!$tag) {
+            if (! $tag) {
                 return response()->json([
                     'data' => null,
                     'errors' => [
@@ -273,7 +273,7 @@ class TagController extends Controller
 
             $tag = Tag::find($tag_id);
 
-            if (!$tag) {
+            if (! $tag) {
                 return response()->json([
                     'data' => null,
                     'errors' => [

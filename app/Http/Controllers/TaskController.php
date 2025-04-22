@@ -75,7 +75,7 @@ class TaskController extends Controller
         try {
             $task = Task::find($id);
 
-            if (!$task) {
+            if (! $task) {
                 return response()->json([
                     'data' => null,
                     'errors' => [

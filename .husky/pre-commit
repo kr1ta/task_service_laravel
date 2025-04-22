@@ -1,0 +1,14 @@
+# Запуск Pint 
+vendor/bin/pint --test || {
+    echo "Pint found issues. Please fix them before committing."
+    exit 1
+}
+
+# Запуск PHPStan 
+vendor/bin/phpstan analyse --memory-limit 1G || {
+    echo "PHPStan found issues. Please fix them before committing."
+    exit 1
+}
+
+echo "All checks passed!"
+exit 0
