@@ -10,42 +10,91 @@ class HabitController extends Controller
 {
     public function create(Request $request)
     {
-        $validatedData = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
+        try {
+            $validatedData = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+            ]);
 
-        $validatedData = collect($validatedData); // Преобразуем в коллекцию
+            $habit = Habit::create([
+                'user_id' => $request->attributes->get('user_id'),
+                'title' => $validatedData['title'],
+                'description' => $validatedData['description'] ?? null,
+            ]);
 
-        $habit = Habit::create([
-            'user_id' => $request->attributes->get('user_id'),
-            'title' => $validatedData->get('title'),
-            'description' => $validatedData->get('description'),
-        ]);
-
-        return new HabitResource($habit);
+            return response()->json([
+                'data' => new HabitResource($habit),
+                'errors' => [],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'data' => null,
+                'errors' => [
+                    [
+                        'code' => 'validation_error',
+                        'message' => $e->getMessage(),
+                    ],
+                ],
+            ], 400);
+        }
     }
 
     public function index(Request $request)
     {
-        \Log::info("request: {$request}");
-        $userId = $request->attributes->get('user_id');
+        try {
+            \Log::info("request: {$request}");
+            $userId = $request->attributes->get('user_id');
 
-        $habits = Habit::where('user_id', $userId)->get();
+            $habits = Habit::where('user_id', $userId)->get();
 
-        return HabitResource::collection($habits);
+            return response()->json([
+                'data' => HabitResource::collection($habits),
+                'errors' => [],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'data' => [],
+                'errors' => [
+                    [
+                        'code' => 'server_error',
+                        'message' => $e->getMessage(),
+                    ],
+                ],
+            ], 500);
+        }
     }
 
     public function show(Request $request, $id)
     {
-        $habit = Habit::find($id);
+        try {
+            $habit = Habit::find($id);
 
-        if (! $habit) {
+            if (!$habit) {
+                return response()->json([
+                    'data' => null,
+                    'errors' => [
+                        [
+                            'code' => 'not_found',
+                            'message' => 'Habit not found',
+                        ],
+                    ],
+                ], 404);
+            }
+
             return response()->json([
-                'message' => 'Habit not found',
-            ], 404);
+                'data' => new HabitResource($habit),
+                'errors' => [],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'data' => null,
+                'errors' => [
+                    [
+                        'code' => 'server_error',
+                        'message' => $e->getMessage(),
+                    ],
+                ],
+            ], 500);
         }
-
-        return new HabitResource($habit);
     }
 }

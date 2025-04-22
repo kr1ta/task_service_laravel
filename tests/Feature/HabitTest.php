@@ -15,9 +15,9 @@ test('habit creation returns 201 status', function () {
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
     ])->postJson('/api/habit', [
-        'title' => 'Morning Run',
-        'description' => 'Run every morning at 7 AM',
-    ]);
+                'title' => 'Morning Run',
+                'description' => 'Run every morning at 7 AM',
+            ]);
 
     $response->assertStatus(201);
 });
@@ -34,13 +34,13 @@ test('habit creation returns correct json structure', function () {
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
     ])->postJson('/api/habit', [
-        'title' => 'Morning Run',
-        'description' => 'Run every morning at 7 AM',
-    ]);
+                'title' => 'Morning Run',
+                'description' => 'Run every morning at 7 AM',
+            ]);
+
 
     $response->assertJsonStructure([
-        'message',
-        'task' => [
+        'data' => [
             'id',
             'user_id',
             'title',
@@ -63,9 +63,9 @@ test('habit creation saves data in database', function () {
     $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
     ])->postJson('/api/habit', [
-        'title' => 'Morning Run',
-        'description' => 'Run every morning at 7 AM',
-    ]);
+                'title' => 'Morning Run',
+                'description' => 'Run every morning at 7 AM',
+            ]);
 
     $this->assertDatabaseHas('habits', [
         'user_id' => 1,
@@ -96,12 +96,14 @@ test('habit can be retrieved by id', function () {
 
     // Проверяем, что в ответе содержится созданная привычка
     $response->assertJson([
-        'id' => $habit->id,
-        'user_id' => 1,
-        'title' => $habit->title,
-        'description' => $habit->description,
-        'created_at' => $habit->created_at->toISOString(),
-        'updated_at' => $habit->updated_at->toISOString(),
+        'data' => [
+            'id' => $habit->id,
+            'user_id' => 1,
+            'title' => $habit->title,
+            'description' => $habit->description,
+            'created_at' => $habit->created_at->toISOString(),
+            'updated_at' => $habit->updated_at->toISOString(),
+        ],
     ]);
 });
 
