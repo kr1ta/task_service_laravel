@@ -1,12 +1,10 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\TaskController;
 use App\Http\Controllers\HabitController;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TimeIntervalController;
+use Illuminate\Support\Facades\Route;
 
 Route::middleware(['validate.token'])->group(function () {
     // создание

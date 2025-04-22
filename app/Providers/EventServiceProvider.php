@@ -2,12 +2,12 @@
 
 namespace App\Providers;
 
-use Illuminate\Auth\Events\Registered;
 use App\Events\IntervalStarted;
 use App\Events\IntervalStopped;
+use App\Listeners\SendToStatisticsByKafka;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use App\Listeners\SendToStatisticsByKafka;
 
 class EventServiceProvider extends ServiceProvider
 {

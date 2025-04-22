@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Resources\TagResource;
 use App\Models\Tag;
-use App\Models\Task;
 use App\Services\TypeResolver;
+use Illuminate\Http\Request;
 
 class TagController extends Controller
 {
@@ -22,10 +22,7 @@ class TagController extends Controller
 
         \Log::info(message: "in the tag create: {$tag}");
 
-        return response()->json([
-            'message' => 'Тег успешно создан!',
-            'name' => $tag,
-        ], 201);
+        return new TagResource($tag);
     }
 
     public function index(Request $request)
@@ -34,20 +31,20 @@ class TagController extends Controller
 
         $tags = Tag::where('user_id', $userId)->get();
 
-        return response()->json($tags, 200);
+        return TagResource::collection($tags);
     }
 
     public function show(Request $request, $id)
     {
         $tag = Tag::find($id);
 
-        if (!$tag) {
+        if (! $tag) {
             return response()->json([
-                'message' => 'Tag not found'
+                'message' => 'Tag not found',
             ], 404);
         }
 
-        return response()->json($tag, 200);
+        return new TagResource($tag);
     }
 
     public function get_tag(Request $request, $type, $id)
@@ -59,45 +56,45 @@ class TagController extends Controller
 
         $tags = $model->tags;
 
-        if (!$tags) {
+        if (! $tags) {
             return response()->json([
-                'message' => 'Tags not found'
+                'message' => 'Tags not found',
             ], 404);
         }
 
-        return response()->json($tags, 200);
+        return TagResource::collection($tags);
     }
 
     public function attach(Request $request, $type, $id, $tag_id)
     {
         $modelClass = TypeResolver::getModelClass($type);
 
-        if (!$modelClass) {
+        if (! $modelClass) {
             return response()->json([
-                'message' => 'Invalid type provided'
+                'message' => 'Invalid type provided',
             ], 400);
         }
 
         $model = $modelClass::find($id);
 
-        if (!$model) {
+        if (! $model) {
             return response()->json([
-                'message' => ucfirst($type) . ' not found'
+                'message' => ucfirst($type).' not found',
             ], 404);
         }
 
         $tag = Tag::find($tag_id);
 
-        if (!$tag) {
+        if (! $tag) {
             return response()->json([
-                'message' => 'Tag not found'
+                'message' => 'Tag not found',
             ], 404);
         }
 
         $model->tags()->syncWithoutDetaching($tag->id); // если тег уже прикреплен то ничего не делаем
 
         return response()->json([
-            'message' => 'Tag attached successfully to ' . ucfirst($type),
+            'message' => 'Tag attached successfully to '.ucfirst($type),
         ], 200);
     }
 
@@ -107,36 +104,37 @@ class TagController extends Controller
 
         $model = $modelClass::find($id);
 
-        if (!$model) {
+        if (! $model) {
             return response()->json([
-                'message' => ucfirst($type) . ' not found'
+                'message' => ucfirst($type).' not found',
             ], 404);
         }
 
         $tag = Tag::find($tag_id);
 
-        if (!$tag) {
+        if (! $tag) {
             return response()->json([
-                'message' => 'Tag not found'
+                'message' => 'Tag not found',
             ], 404);
         }
 
         if ($model && $tag) {
             $model->tags()->detach($tag_id);
 
-            return response()->json($model->tags()->get(), 200);
+            return TagResource::collection($model->tags()->get());
         }
     }
 
     public function list(Request $request, $tag_id)
     {
+        // to do
         $allModels = [];
 
         $tag = Tag::find($tag_id);
 
-        if (!$tag) {
+        if (! $tag) {
             return response()->json([
-                'message' => 'Tag not found'
+                'message' => 'Tag not found',
             ], 404);
         }
 

@@ -1,9 +1,8 @@
 <?php
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use App\Models\Task;
 use App\Models\TimeInterval;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 
 test('time interval can be started successfully', function () {
@@ -63,7 +62,6 @@ test('time interval can be stopped successfully', function () {
 
     // Мокируем очередь для Kafka
     Queue::fake();
-
 
     // Создаем задачу и активный интервал
     $task = Task::factory()->create(['user_id' => 1]);

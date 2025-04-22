@@ -2,10 +2,9 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\Task;
 use App\Models\Tag;
+use App\Models\Task;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class TaskTagFactory extends Factory
 {

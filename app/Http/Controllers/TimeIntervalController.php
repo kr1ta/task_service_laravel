@@ -5,15 +5,14 @@ namespace App\Http\Controllers;
 use App\Events\IntervalStarted;
 use App\Events\IntervalStopped;
 use App\Models\TimeInterval;
-use Illuminate\Http\Request;
-use Carbon\Carbon;
 use App\Services\TypeResolver;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class TimeIntervalController extends Controller
 {
     public function start(Request $request, $type, $id)
     {
-        // Валидация входных данных
         $validatedData = $request->validate([
             'duration' => 'required|integer',
         ]);
@@ -21,11 +20,11 @@ class TimeIntervalController extends Controller
         \Log::info("request: {$request}");
 
         // Проверка поддерживаемого типа и существования объекта
-        if (!$this->isSupportedType($type)) {
+        if (! $this->isSupportedType($type)) {
             return $this->handleErrorResponse('Unsupported type or object does not exist.', 400);
         }
 
-        if (!$this->objectExists($type, $id)) {
+        if (! $this->objectExists($type, $id)) {
             return $this->handleErrorResponse('Object does not exist.', 400);
         }
 
@@ -38,7 +37,7 @@ class TimeIntervalController extends Controller
             ->first();
 
         if ($timeInterval) {
-            if (!$this->isIntervalCompletedByDuration($timeInterval)) {
+            if (! $this->isIntervalCompletedByDuration($timeInterval)) {
                 return $this->handleErrorResponse('Interval already started! Try to stop it!', 409);
             }
         }
@@ -71,14 +70,14 @@ class TimeIntervalController extends Controller
 
         // Формирование сообщения для события
         $message = [
-            "intervalable_id" => $id,
-            "duration" => $duration,
-            "intervalable_type" => $modelClass,
-            "type" => $type,
-            "user_id" => $request->attributes->get('user_id'),
-            "unspent_time" => 0,
-            "update_type" => "start",
-            "tag_stats" => $tagStats, // Добавляем tag_stats
+            'intervalable_id' => $id,
+            'duration' => $duration,
+            'intervalable_type' => $modelClass,
+            'type' => $type,
+            'user_id' => $request->attributes->get('user_id'),
+            'unspent_time' => 0,
+            'update_type' => 'start',
+            'tag_stats' => $tagStats, // Добавляем tag_stats
         ];
 
         \Log::info(json_encode($message, JSON_PRETTY_PRINT));
@@ -95,11 +94,11 @@ class TimeIntervalController extends Controller
     public function stop(Request $request, $type, $id)
     {
         // Проверка поддерживаемого типа и существования объекта
-        if (!$this->isSupportedType($type)) {
+        if (! $this->isSupportedType($type)) {
             return $this->handleErrorResponse('Unsupported type or object does not exist.', 400);
         }
 
-        if (!$this->objectExists($type, $id)) {
+        if (! $this->objectExists($type, $id)) {
             return $this->handleErrorResponse('Object does not exist.', 400);
         }
 
@@ -111,7 +110,7 @@ class TimeIntervalController extends Controller
             ->latest('start_time')
             ->first();
 
-        if (!$timeInterval || $this->isIntervalCompletedByDuration($timeInterval)) {
+        if (! $timeInterval || $this->isIntervalCompletedByDuration($timeInterval)) {
             return $this->handleErrorResponse('No active time interval found for the given object.', 404);
         }
 
@@ -143,15 +142,15 @@ class TimeIntervalController extends Controller
 
         // Формирование сообщения для события
         $message = [
-            "intervalable_id" => $id,
-            "duration" => $spentTime,
-            "intervalable_type" => $modelClass,
-            "type" => $type,
-            "user_id" => $request->attributes->get('user_id'),
-            "unspent_time" => $unspentTime,
-            "update_type" => "stop",
-            "tag_stats" => $tagStats,
-            "early_completed" => true, // флаг раннего завершения
+            'intervalable_id' => $id,
+            'duration' => $spentTime,
+            'intervalable_type' => $modelClass,
+            'type' => $type,
+            'user_id' => $request->attributes->get('user_id'),
+            'unspent_time' => $unspentTime,
+            'update_type' => 'stop',
+            'tag_stats' => $tagStats,
+            'early_completed' => true, // флаг раннего завершения
         ];
 
         \Log::info(json_encode($message, JSON_PRETTY_PRINT));
@@ -164,6 +163,7 @@ class TimeIntervalController extends Controller
             'time_interval' => $timeInterval->fresh(),
         ], 200);
     }
+
     private function handleErrorResponse($message, $code)
     {
         return response()->json([
@@ -179,6 +179,7 @@ class TimeIntervalController extends Controller
     private function objectExists($type, $id): bool
     {
         $tableName = TypeResolver::getTableName($type);
+
         return \DB::table($tableName)->where('id', $id)->exists();
     }
 

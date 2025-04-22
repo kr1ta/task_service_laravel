@@ -14,7 +14,7 @@ class IntervalStopped
 
     public function __construct($message)
     {
-        \Log::info("In the IntervalStarted event");
+        \Log::info('In the IntervalStarted event');
         $this->message = $message;
     }
 }

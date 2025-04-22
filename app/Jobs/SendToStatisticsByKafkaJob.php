@@ -7,8 +7,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use RdKafka\Producer;
 use RdKafka\Conf;
+use RdKafka\Producer;
 
 class SendToStatisticsByKafkaJob implements ShouldQueue
 {
@@ -23,13 +23,13 @@ class SendToStatisticsByKafkaJob implements ShouldQueue
 
     public function handle(): void
     {
-        $conf = new Conf();
-        $conf->set('metadata.broker.list', 'localhost:9092');
+        $conf = new Conf;
+        $conf->set('metadata.broker.list', env('KAFKA_BROKER'));
 
         $producer = new Producer($conf);
         $topic = $producer->newTopic('stat');
 
-        \Log::info("in job, " . json_encode($this->message));
+        \Log::info('in job, '.json_encode($this->message));
 
         $topic->produce(RD_KAFKA_PARTITION_UA, 0, json_encode($this->message));
 

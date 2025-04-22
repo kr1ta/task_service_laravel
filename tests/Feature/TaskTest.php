@@ -1,8 +1,7 @@
 <?php
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use App\Models\Task;
+use Illuminate\Support\Facades\Http;
 
 test('task creation returns 201 status', function () {
     // Мокируем HTTP-запрос к сервису авторизации

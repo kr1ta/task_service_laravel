@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Task;
 use App\Events\TaskCreated;
+use App\Http\Resources\TaskResource;
+use App\Models\Task;
+use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
@@ -27,31 +28,30 @@ class TaskController extends Controller
 
         // event(new TaskCreated($task));
 
-        return response()->json([
-            'message' => 'Задача успешно создана!',
-            'task' => $task,
-        ], 201);
+        return new TaskResource($task);
     }
 
     public function index(Request $request)
     {
         $userId = $request->attributes->get('user_id');
 
-        $tasks = Task::where('user_id', $userId)->get();
+        $tasks = Task::where('user_id', $userId)
+            ->with('tags')
+            ->get();
 
-        return response()->json($tasks, 200);
+        return TaskResource::collection($tasks);
     }
 
     public function show(Request $request, $id)
     {
         $task = Task::find($id);
 
-        if (!$task) {
+        if (! $task) {
             return response()->json([
-                'message' => 'Task not found'
+                'message' => 'Task not found',
             ], 404);
         }
 
-        return response()->json($task, 200);
+        return new TaskResource($task);
     }
 }

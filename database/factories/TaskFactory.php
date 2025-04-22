@@ -15,11 +15,11 @@ class TaskFactory extends Factory
             'user_id' => $this->faker->numberBetween(1, 10),
             'title' => $this->faker->sentence,
             'description' => $this->faker->paragraph,
-            #'finish_at' => $finishAt,
+            // 'finish_at' => $finishAt,
             'status' => $status,
             'created_at' => now(),
             'updated_at' => now(),
-            #'deleted_at' => null,
+            // 'deleted_at' => null,
         ];
     }
 }
