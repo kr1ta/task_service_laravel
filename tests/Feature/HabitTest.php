@@ -15,9 +15,9 @@ test('habit creation returns 201 status', function () {
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
     ])->postJson('/api/habit', [
-                'title' => 'Morning Run',
-                'description' => 'Run every morning at 7 AM',
-            ]);
+        'title' => 'Morning Run',
+        'description' => 'Run every morning at 7 AM',
+    ]);
 
     $response->assertStatus(201);
 });
@@ -34,10 +34,9 @@ test('habit creation returns correct json structure', function () {
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
     ])->postJson('/api/habit', [
-                'title' => 'Morning Run',
-                'description' => 'Run every morning at 7 AM',
-            ]);
-
+        'title' => 'Morning Run',
+        'description' => 'Run every morning at 7 AM',
+    ]);
 
     $response->assertJsonStructure([
         'data' => [
@@ -63,9 +62,9 @@ test('habit creation saves data in database', function () {
     $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
     ])->postJson('/api/habit', [
-                'title' => 'Morning Run',
-                'description' => 'Run every morning at 7 AM',
-            ]);
+        'title' => 'Morning Run',
+        'description' => 'Run every morning at 7 AM',
+    ]);
 
     $this->assertDatabaseHas('habits', [
         'user_id' => 1,

@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# Запуск Pest 
+vendor/bin/pest || {
+    echo "Tests failed. Please fix them before pushing."
+    exit 1
+}
+
+echo "All tests passed!"
+exit 0

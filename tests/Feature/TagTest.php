@@ -17,8 +17,8 @@ test('tag creation returns 201 status', function () {
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
     ])->postJson('/api/tag', [
-                'name' => 'Workout',
-            ]);
+        'name' => 'Workout',
+    ]);
 
     // Проверяем, что ответ имеет статус 201 (Created)
     $response->assertStatus(201);
@@ -36,8 +36,8 @@ test('tag creation returns correct json structure', function () {
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
     ])->postJson('/api/tag', [
-                'name' => 'Workout',
-            ]);
+        'name' => 'Workout',
+    ]);
 
     // Проверяем структуру JSON-ответа
     $response->assertJsonStructure([
@@ -45,7 +45,7 @@ test('tag creation returns correct json structure', function () {
             'id',
             'user_id',
             'name',
-        ]
+        ],
     ]);
 });
 
@@ -61,8 +61,8 @@ test('tag creation saves data in database', function () {
     $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
     ])->postJson('/api/tag', [
-                'name' => 'Workout',
-            ]);
+        'name' => 'Workout',
+    ]);
 
     // Проверяем, что тег сохранен в базе данных
     $this->assertDatabaseHas('tags', [
@@ -223,14 +223,14 @@ test('tags list returns all models', function () {
                 'id' => $task->id,
                 'user_id' => 1,
                 'title' => $task->title,
-            ]
+            ],
         ],
         'habit' => [
             [
                 'id' => $habit->id,
                 'user_id' => 1,
                 'title' => $habit->title,
-            ]
+            ],
         ],
     ]);
 });

@@ -22,11 +22,11 @@ class TimeIntervalController extends Controller
             \Log::info("request: {$request}");
 
             // Проверка поддерживаемого типа и существования объекта
-            if (!$this->isSupportedType($type)) {
+            if (! $this->isSupportedType($type)) {
                 return $this->handleErrorResponse('unsupported_type', 'Unsupported type or object does not exist.', 400);
             }
 
-            if (!$this->objectExists($type, $id)) {
+            if (! $this->objectExists($type, $id)) {
                 return $this->handleErrorResponse('not_found', 'Object does not exist.', 404);
             }
 
@@ -38,7 +38,7 @@ class TimeIntervalController extends Controller
                 ->latest('start_time')
                 ->first();
 
-            if ($timeInterval && !$this->isIntervalCompletedByDuration($timeInterval)) {
+            if ($timeInterval && ! $this->isIntervalCompletedByDuration($timeInterval)) {
                 return $this->handleErrorResponse('conflict', 'Interval already started! Try to stop it!', 409);
             }
 
@@ -106,11 +106,11 @@ class TimeIntervalController extends Controller
     {
         try {
             // Проверка поддерживаемого типа и существования объекта
-            if (!$this->isSupportedType($type)) {
+            if (! $this->isSupportedType($type)) {
                 return $this->handleErrorResponse('unsupported_type', 'Unsupported type or object does not exist.', 400);
             }
 
-            if (!$this->objectExists($type, $id)) {
+            if (! $this->objectExists($type, $id)) {
                 return $this->handleErrorResponse('not_found', 'Object does not exist.', 404);
             }
 
@@ -122,7 +122,7 @@ class TimeIntervalController extends Controller
                 ->latest('start_time')
                 ->first();
 
-            if (!$timeInterval || $this->isIntervalCompletedByDuration($timeInterval)) {
+            if (! $timeInterval || $this->isIntervalCompletedByDuration($timeInterval)) {
                 return $this->handleErrorResponse('not_found', 'No active time interval found for the given object.', 404);
             }
 

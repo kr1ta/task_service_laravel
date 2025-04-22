@@ -69,7 +69,7 @@ class HabitController extends Controller
         try {
             $habit = Habit::find($id);
 
-            if (!$habit) {
+            if (! $habit) {
                 return response()->json([
                     'data' => null,
                     'errors' => [
