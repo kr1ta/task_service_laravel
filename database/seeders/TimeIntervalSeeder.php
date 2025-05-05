@@ -9,6 +9,6 @@ class TimeIntervalSeeder extends Seeder
 {
     public function run(): void
     {
-        TimeInterval::factory()->count(10)->create();
+        TimeInterval::factory()->count(20)->create();
     }
 }

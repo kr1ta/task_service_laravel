@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Events\IntervalStarted;
 use App\Events\IntervalStopped;
+use App\Events\StatusUpdated;
 use App\Listeners\SendToStatisticsByKafka;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -26,6 +27,10 @@ class EventServiceProvider extends ServiceProvider
         ],
 
         IntervalStopped::class => [
+            SendToStatisticsByKafka::class,
+        ],
+
+        StatusUpdated::class => [
             SendToStatisticsByKafka::class,
         ],
 

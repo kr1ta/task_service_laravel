@@ -21,7 +21,7 @@ class TagController extends Controller
 
             \Log::info("in the tag create: {$tag}");
 
-            return $this->successResponse(new TagResource($tag));
+            return $this->successResponse(new TagResource($tag), 201);
         } catch (\Exception $e) {
             return $this->errorResponse('validation_error', $e->getMessage(), 400);
         }
@@ -56,6 +56,52 @@ class TagController extends Controller
             return $this->successResponse(new TagResource($tag));
         } catch (\Exception $e) {
             return $this->errorResponse('server_error', $e->getMessage(), 500);
+        }
+    }
+
+    public function delete(Request $request, $id)
+    {
+        try {
+            $tag = Tag::find($id);
+
+            if (! $tag) {
+                return $this->errorResponse('not_found', 'Tag not found', 404);
+            }
+
+            if ($tag->user_id !== $request->attributes->get('user_id')) {
+                return $this->errorResponse('access_denied', 'You do not have permission to delete this tag', 403);
+            }
+
+            $tag->delete();
+
+            return $this->successResponse(null, 204); // 204 No Content
+        } catch (\Exception $e) {
+            return $this->errorResponse('server_error', $e->getMessage(), 500);
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $tag = Tag::find($id);
+
+            if (! $tag) {
+                return $this->errorResponse('not_found', 'Tag not found', 404);
+            }
+
+            if ($tag->user_id !== $request->attributes->get('user_id')) {
+                return $this->errorResponse('access_denied', 'You do not have permission to update this tag', 403);
+            }
+
+            $validatedData = $this->validateTaskData($request);
+
+            $tag->update([
+                'name' => $validatedData['name'],
+            ]);
+
+            return $this->successResponse(new TagResource($tag));
+        } catch (\Exception $e) {
+            return $this->errorResponse('validation_error', $e->getMessage(), 400);
         }
     }
 

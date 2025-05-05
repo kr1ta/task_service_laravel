@@ -12,8 +12,13 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // $schedule->command('inspire')->everyMinute();
+        $schedule->command('ti:clear')->dailyAt('02:00');
     }
+
+    protected $commands = [
+        \App\Console\Commands\ClearOldTimeIntervals::class,
+    ];
 
     /**
      * Register the commands for the application.

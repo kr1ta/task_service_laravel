@@ -9,8 +9,8 @@ class TypeResolver
     public static function getModelClass(string $type): string
     {
         return match ($type) {
-            'task' => \App\Models\Task::class,
-            'habit' => \App\Models\Habit::class,
+            'tasks' => \App\Models\Task::class,
+            'habits' => \App\Models\Habit::class,
             default => throw new InvalidArgumentException("Unsupported type: {$type}"),
         };
     }
@@ -18,8 +18,8 @@ class TypeResolver
     public static function allTypes(): array
     {
         return [
-            'task' => \App\Models\Task::class,
-            'habit' => \App\Models\Habit::class,
+            'tasks' => \App\Models\Task::class,
+            'habits' => \App\Models\Habit::class,
         ];
     }
 
@@ -29,8 +29,8 @@ class TypeResolver
     public static function getTableName(string $type): string
     {
         return match ($type) {
-            'task' => 'tasks',
-            'habit' => 'habits',
+            'tasks' => 'tasks',
+            'habits' => 'habits',
             default => throw new InvalidArgumentException("Unsupported type: {$type}"),
         };
     }

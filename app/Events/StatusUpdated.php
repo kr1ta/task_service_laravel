@@ -6,7 +6,7 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class IntervalStopped
+class StatusUpdated
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -14,7 +14,7 @@ class IntervalStopped
 
     public function __construct($message)
     {
-        \Log::info('In the IntervalStopped event');
+        \Log::info('In the StatusUpdated event');
         $this->message = $message;
     }
 }

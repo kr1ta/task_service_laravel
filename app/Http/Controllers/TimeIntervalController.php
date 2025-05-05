@@ -44,7 +44,7 @@ class TimeIntervalController extends Controller
 
             return $this->successResponse($timeInterval, 201);
         } catch (\Exception $e) {
-            return $this->handleServerError($e);
+            return $this->errorResponse('server_error', $e->getMessage(), 500);
         }
     }
 
@@ -123,7 +123,7 @@ class TimeIntervalController extends Controller
 
     private function isSupportedType($type): bool
     {
-        return in_array($type, ['task', 'habit']);
+        return in_array($type, ['tasks', 'habits']);
     }
 
     private function objectExists($type, $id): bool

@@ -14,7 +14,7 @@ test('task creation returns 201 status', function () {
 
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->postJson('/api/task', [
+    ])->postJson('/api/tasks', [
         'title' => 'Test Task',
         'description' => 'This is a test task',
         'status' => 'In Progress',
@@ -34,15 +34,13 @@ test('task creation returns correct json structure', function () {
 
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->postJson('/api/task', [
+    ])->postJson('/api/tasks', [
         'title' => 'Test Task',
         'description' => 'This is a test task',
         'status' => 'In Progress',
     ]);
-
     $response->assertJsonStructure([
-        'message',
-        'task' => [
+        'data' => [
             'id',
             'user_id',
             'title',
@@ -65,7 +63,7 @@ test('task creation saves data in database', function () {
 
     $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->postJson('/api/task', [
+    ])->postJson('/api/tasks', [
         'title' => 'Test Task',
         'description' => 'This is a test task',
         'status' => 'In Progress',
@@ -100,7 +98,7 @@ test('user tasks can be listed', function () {
     $response->assertStatus(200);
 
     // Проверяем, что в ответе содержится 3 задачи
-    $response->assertJsonCount(3);
+    $response->assertJsonCount(3, 'data');
 });
 
 test('task can be retrieved by id', function () {
@@ -118,24 +116,26 @@ test('task can be retrieved by id', function () {
     // Выполняем GET-запрос к эндпоинту получения задачи по ID
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->getJson("/api/task/{$task->id}");
+    ])->getJson("/api/tasks/{$task->id}");
 
     // Проверяем, что ответ имеет статус 200 (OK)
     $response->assertStatus(200);
 
     // Проверяем, что в ответе содержится созданная задача
     $response->assertJson([
-        'id' => $task->id,
-        'user_id' => 1,
-        'title' => $task->title,
-        'description' => $task->description,
-        'status' => $task->status,
-        'created_at' => $task->created_at->toISOString(),
-        'updated_at' => $task->updated_at->toISOString(),
+        'data' => [
+            'id' => $task->id,
+            'user_id' => 1,
+            'title' => $task->title,
+            'description' => $task->description,
+            'status' => $task->status,
+            'created_at' => $task->created_at->toISOString(),
+            'updated_at' => $task->updated_at->toISOString(),
+        ],
     ]);
 });
 
-test('task not found returns 404', function () {
+test('task not found returns 404 and correct response', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
@@ -147,13 +147,19 @@ test('task not found returns 404', function () {
     // Выполняем GET-запрос к несуществующей задаче
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->getJson('/api/task/999');
+    ])->getJson('/api/tasks/999');
 
     // Проверяем, что ответ имеет статус 404 (Not Found)
     $response->assertStatus(404);
 
     // Проверяем, что в ответе содержится сообщение об ошибке
-    $response->assertJson([
-        'message' => 'Task not found',
+    $response->assertExactJson([
+        'data' => null,
+        'errors' => [
+            [
+                'code' => 'not_found',
+                'message' => 'Task not found',
+            ],
+        ],
     ]);
 });

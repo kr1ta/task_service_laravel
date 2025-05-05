@@ -2,26 +2,31 @@
 
 namespace Database\Factories;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class TimeIntervalFactory extends Factory
 {
     public function definition(): array
     {
-        $duration = $this->faker->numberBetween(10, 100);
+        $types = ['task', 'habit'];
+        $type = $this->faker->randomElement($types);
 
-        $task_id = $this->faker->optional(0.5)->numberBetween(1, 10);
+        $id = $this->faker->numberBetween(1, 100);
 
-        if (! $task_id) {
-            $habit_id = $this->faker->numberBetween(1, 10);
-        }
+        $startTime = $this->faker->dateTimeBetween('-1 month', 'today');
+
+        $duration = $this->faker->numberBetween(10, 1000);
+
+        $finishTime = Carbon::instance($startTime)->addMinutes($duration);
 
         return [
-            // 'task_id' => $task_id,
-            // 'habit_id' => $task_id ? null : $habit_id,
-            'start_time' => $this->faker->dateTimeBetween('-1 month', '-1 day'),
+            'intervalable_id' => $id,
+            'intervalable_type' => $type,
+            'start_time' => $startTime,
+            'finish_time' => $finishTime,
             'duration' => $duration,
-            // 'deleted_at' => null,
+            'created_at' => $this->faker->dateTimeBetween('-6 days', 'now'),
         ];
     }
 }

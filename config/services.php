@@ -34,4 +34,8 @@ return [
     'validate_token' => [
         'url' => env('VALIDATE_TOKEN_URL', 'http://localhost:8001/api/validate-token'),
     ],
+
+    'kafka_broker' => [
+        'url' => env('KAFKA_BROKER', 'localhost:9092'),
+    ],
 ];

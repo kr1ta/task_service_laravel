@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Habit;
+use App\Models\Tag;
 use App\Models\Task;
 use Illuminate\Console\Command;
 use RdKafka\Conf;
@@ -51,7 +52,23 @@ class MyKafkaConsumer extends Command
         $userId = $payload['user_id'];
         $this->info("Received user created event for user ID: $userId");
 
-        Task::create(['user_id' => $userId, 'title' => 'Initial task', 'description' => 'Hello! Glad to see ya, it\'s ypur first task!']);
-        Habit::create(['user_id' => $userId, 'title' => 'Walk', 'description' => 'It\'s your first habit!']);
+        Task::create([
+            'user_id' => $userId,
+            'title' => 'Initial task',
+            'description' => 'Hello! Glad to see ya, it\'s your first task!',
+        ]);
+
+        $habit = Habit::create([
+            'user_id' => $userId,
+            'title' => 'Walk',
+            'description' => 'It\'s your first habit!',
+        ]);
+
+        $tag = Tag::create([
+            'user_id' => $userId,
+            'name' => 'Sport',
+        ]);
+
+        $habit->tags()->syncWithoutDetaching($tag->id);
     }
 }
