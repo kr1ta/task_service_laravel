@@ -16,7 +16,7 @@ test('tag creation returns 201 status', function () {
 
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->postJson('/api/tag', [
+    ])->postJson('/api/tags', [
         'name' => 'Workout',
     ]);
 
@@ -35,7 +35,7 @@ test('tag creation returns correct json structure', function () {
 
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->postJson('/api/tag', [
+    ])->postJson('/api/tags', [
         'name' => 'Workout',
     ]);
 
@@ -60,7 +60,7 @@ test('tag creation saves data in database', function () {
 
     $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->postJson('/api/tag', [
+    ])->postJson('/api/tags', [
         'name' => 'Workout',
     ]);
 
@@ -92,10 +92,10 @@ test('tags can be listed', function () {
     $response->assertStatus(200);
 
     // Проверяем, что в ответе содержится 3 тега
-    $response->assertJsonCount(3);
+    $response->assertJsonCount(3, 'data');
 });
 
-test('tag not found returns 404', function () {
+test('tag not found returns 404 and correct response', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
@@ -107,14 +107,20 @@ test('tag not found returns 404', function () {
     // Выполняем GET-запрос к несуществующему тегу
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->getJson('/api/tag/999');
+    ])->getJson('/api/tags/999');
 
     // Проверяем, что ответ имеет статус 404 (Not Found)
     $response->assertStatus(404);
 
     // Проверяем, что в ответе содержится сообщение об ошибке
-    $response->assertJson([
-        'message' => 'Tag not found',
+    $response->assertExactJson([
+        'data' => null,
+        'errors' => [
+            [
+                'code' => 'not_found',
+                'message' => 'Tag not found',
+            ],
+        ],
     ]);
 });
 
@@ -134,7 +140,7 @@ test('tag can be attached to a task', function () {
     // Выполняем POST-запрос для прикрепления тега к задаче
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->postJson("/api/task/{$task->id}/tag/{$tag->id}");
+    ])->postJson("/api/tasks/{$task->id}/attach-tag/{$tag->id}");
 
     // Проверяем, что ответ имеет статус 200 (OK)
     $response->assertStatus(200);
@@ -155,7 +161,7 @@ test('attach fails if tag or task does not exist', function () {
     // Выполняем POST-запрос для несуществующей задачи или тега
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->postJson('/api/task/999/tag/999/attach');
+    ])->postJson('/api/tasks/999/tags/999/attach-tag');
 
     // Проверяем, что ответ имеет статус 404 (Not Found)
     $response->assertStatus(404);
@@ -180,7 +186,7 @@ test('tag can be detached from a task', function () {
     // Выполняем POST-запрос для открепления тега от задачи
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->deleteJson("/api/task/{$task->id}/tag/{$tag->id}");
+    ])->deleteJson("/api/tasks/{$task->id}/detach-tag/{$tag->id}");
 
     // Проверяем, что ответ имеет статус 200 (OK)
     $response->assertStatus(200);
@@ -211,25 +217,27 @@ test('tags list returns all models', function () {
     // Выполняем GET-запрос к эндпоинту списка моделей для тега
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->getJson("/api/tag/{$tag->id}");
+    ])->getJson("/api/tags/{$tag->id}");
 
     // Проверяем, что ответ имеет статус 200 (OK)
     $response->assertStatus(200);
 
     // Проверяем, что в ответе содержатся задачи и привычки
     $response->assertJson([
-        'task' => [
-            [
-                'id' => $task->id,
-                'user_id' => 1,
-                'title' => $task->title,
+        'data' => [
+            'tasks' => [
+                [
+                    'id' => $task->id,
+                    'user_id' => 1,
+                    'title' => $task->title,
+                ],
             ],
-        ],
-        'habit' => [
-            [
-                'id' => $habit->id,
-                'user_id' => 1,
-                'title' => $habit->title,
+            'habits' => [
+                [
+                    'id' => $habit->id,
+                    'user_id' => 1,
+                    'title' => $habit->title,
+                ],
             ],
         ],
     ]);
@@ -254,18 +262,21 @@ test('tags can be retrieved for a task', function () {
     // Выполняем GET-запрос для получения тегов задачи
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->getJson("/api/task/{$task->id}/tags");
+    ])->getJson("/api/tasks/{$task->id}/tags");
 
     // Проверяем, что ответ имеет статус 200 (OK)
     $response->assertStatus(200);
 
     // Проверяем, что в ответе содержится созданный тег
     $response->assertJson([
-        [
-            'id' => $tag->id,
-            'user_id' => $tag->user_id,
-            'name' => $tag->name,
+        'data' => [
+            [
+                'id' => $tag->id,
+                'user_id' => $tag->user_id,
+                'name' => $tag->name,
+            ],
         ],
+        'errors' => [],
     ]);
 });
 
@@ -288,18 +299,21 @@ test('tags can be retrieved for a habit', function () {
     // Выполняем GET-запрос для получения тегов привычки
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->getJson("/api/habit/{$habit->id}/tags");
+    ])->getJson("/api/habits/{$habit->id}/tags");
 
     // Проверяем, что ответ имеет статус 200 (OK)
     $response->assertStatus(200);
 
     // Проверяем, что в ответе содержится созданный тег
     $response->assertJson([
-        [
-            'id' => $tag->id,
-            'user_id' => $tag->user_id,
-            'name' => $tag->name,
+        'data' => [
+            [
+                'id' => $tag->id,
+                'user_id' => $tag->user_id,
+                'name' => $tag->name,
+            ],
         ],
+        'errors' => [],
     ]);
 });
 
@@ -315,10 +329,9 @@ test('get tags fails if model does not exist', function () {
     // Выполняем GET-запрос для несуществующей задачи
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->getJson('/api/task/999/tags');
+    ])->getJson('/api/tasks/999/tags');
 
-    // Произойдет ошибка в контроллере при попытке получить свойство из model, который будет null из-за некоректного tag
-    $response->assertStatus(500);
+    $response->assertStatus(404);
 });
 
 test('get tags fails if type is invalid', function () {
@@ -333,13 +346,19 @@ test('get tags fails if type is invalid', function () {
     // Выполняем GET-запрос для недопустимого типа
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->getJson('/api/invalid-type/1/tag');
+    ])->getJson('/api/invalid-type/1/tags');
 
-    // Проверяем, что ответ имеет статус 404 (Bad Request)
-    $response->assertStatus(404);
+    // Проверяем, что ответ имеет статус 500 (server_error)
+    $response->assertStatus(500);
 
     // Проверяем, что в ответе содержится сообщение об ошибке
     $response->assertJson([
-        'message' => 'The route api/invalid-type/1/tag could not be found.',
+        'data' => null,
+        'errors' => [
+            [
+                'code' => 'server_error',
+                'message' => 'Unsupported type: invalid-type',
+            ],
+        ],
     ]);
 });

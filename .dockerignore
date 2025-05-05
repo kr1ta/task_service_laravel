@@ -24,8 +24,8 @@ public/mix-manifest.json
 .svn/
 
 # Исключаем тестовые файлы (если они не нужны в production)
-tests/
-phpunit.xml
+# tests/
+# phpunit.xml
 
 *.vscode/*
 

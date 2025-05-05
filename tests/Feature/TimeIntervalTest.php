@@ -23,7 +23,7 @@ test('time interval can be started successfully', function () {
     // Выполняем POST-запрос для запуска интервала
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->postJson("/api/task/{$task->id}/start", [
+    ])->postJson("/api/tasks/{$task->id}/start-interval", [
         'duration' => 3600, // 1 час
     ]);
 
@@ -32,15 +32,17 @@ test('time interval can be started successfully', function () {
 
     // Проверяем структуру JSON-ответа
     $response->assertJsonStructure([
-        'message',
-        'time_interval' => [
-            'id',
+        'data' => [
             'intervalable_id',
             'intervalable_type',
             'duration',
             'start_time',
             'finish_time',
+            'updated_at',
+            'created_at',
+            'id',
         ],
+        'errors',
     ]);
 
     // Проверяем, что интервал сохранен в базе данных
@@ -76,15 +78,14 @@ test('time interval can be stopped successfully', function () {
     // Выполняем POST-запрос для остановки интервала
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->postJson("/api/task/{$task->id}/stop");
+    ])->postJson("/api/tasks/{$task->id}/stop-interval");
 
     // Проверяем, что ответ имеет статус 200 (OK)
     $response->assertStatus(200);
 
     // Проверяем структуру JSON-ответа
     $response->assertJsonStructure([
-        'message',
-        'time_interval' => [
+        'data' => [
             'id',
             'intervalable_id',
             'intervalable_type',
@@ -92,6 +93,7 @@ test('time interval can be stopped successfully', function () {
             'start_time',
             'finish_time',
         ],
+        'errors',
     ]);
 
     // Проверяем, что интервал обновлен в базе данных

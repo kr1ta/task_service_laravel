@@ -14,7 +14,7 @@ test('habit creation returns 201 status', function () {
 
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->postJson('/api/habit', [
+    ])->postJson('/api/habits', [
         'title' => 'Morning Run',
         'description' => 'Run every morning at 7 AM',
     ]);
@@ -33,7 +33,7 @@ test('habit creation returns correct json structure', function () {
 
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->postJson('/api/habit', [
+    ])->postJson('/api/habits', [
         'title' => 'Morning Run',
         'description' => 'Run every morning at 7 AM',
     ]);
@@ -61,7 +61,7 @@ test('habit creation saves data in database', function () {
 
     $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->postJson('/api/habit', [
+    ])->postJson('/api/habits', [
         'title' => 'Morning Run',
         'description' => 'Run every morning at 7 AM',
     ]);
@@ -88,7 +88,7 @@ test('habit can be retrieved by id', function () {
     // Выполняем GET-запрос к эндпоинту получения привычки по ID
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->getJson("/api/habit/{$habit->id}");
+    ])->getJson("/api/habits/{$habit->id}");
 
     // Проверяем, что ответ имеет статус 200 (OK)
     $response->assertStatus(200);
@@ -106,7 +106,7 @@ test('habit can be retrieved by id', function () {
     ]);
 });
 
-test('habit not found returns 404', function () {
+test('habit not found returns 404 and correct response', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
@@ -118,13 +118,19 @@ test('habit not found returns 404', function () {
     // Выполняем GET-запрос к несуществующей привычке
     $response = $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
-    ])->getJson('/api/habit/999');
+    ])->getJson('/api/habits/999');
 
     // Проверяем, что ответ имеет статус 404 (Not Found)
     $response->assertStatus(404);
 
     // Проверяем, что в ответе содержится сообщение об ошибке
-    $response->assertJson([
-        'message' => 'Habit not found',
+    $response->assertExactJson([
+        'data' => null,
+        'errors' => [
+            [
+                'code' => 'not_found',
+                'message' => 'Habit not found',
+            ],
+        ],
     ]);
 });
