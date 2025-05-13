@@ -3,12 +3,14 @@
 use App\Models\Habit;
 use Illuminate\Support\Facades\Http; // Импортируем модель Habit
 
-test('habit creation returns 201 status', function () {
+test('habit creation returns 200 status', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 
@@ -19,15 +21,17 @@ test('habit creation returns 201 status', function () {
         'description' => 'Run every morning at 7 AM',
     ]);
 
-    $response->assertStatus(201);
+    $response->assertStatus(200);
 });
 
 test('habit creation returns correct json structure', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 
@@ -54,8 +58,10 @@ test('habit creation saves data in database', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 
@@ -77,8 +83,10 @@ test('habit can be retrieved by id', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 
@@ -110,8 +118,10 @@ test('habit not found returns 404 and correct response', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 

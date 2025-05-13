@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\HabitResource;
 use App\Models\Habit;
+use App\Services\ResponseHelperService;
 use Illuminate\Http\Request;
 
 class HabitController extends Controller
@@ -22,23 +23,32 @@ class HabitController extends Controller
                 'description' => $validatedData['description'] ?? null,
             ]);
 
-            return $this->successResponse(new HabitResource($habit), 201);
+            return ResponseHelperService::success(new HabitResource($habit), 201);
         } catch (\Exception $e) {
-            return $this->errorResponse('validation_error', $e->getMessage(), 400);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'validation_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 400);
         }
     }
 
     public function index(Request $request)
     {
         try {
-            \Log::info("request: {$request}");
             $userId = $request->attributes->get('user_id');
 
             $habits = Habit::where('user_id', $userId)->get();
 
-            return $this->successResponse(HabitResource::collection($habits));
+            return ResponseHelperService::success(HabitResource::collection($habits));
         } catch (\Exception $e) {
-            return $this->errorResponse('server_error', $e->getMessage(), 500);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'server_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 500);
         }
     }
 
@@ -48,16 +58,31 @@ class HabitController extends Controller
             $habit = Habit::find($id);
 
             if (! $habit) {
-                return $this->errorResponse('not_found', 'Habit not found', 404);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'not_found',
+                        'message' => 'Habit not found',
+                    ],
+                ], 404);
             }
 
             if ($habit->user_id !== $request->attributes->get('user_id')) {
-                return $this->errorResponse('access_denied', 'You do not have permission to access this habit', 403);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'access_denied',
+                        'message' => 'You do not have permission to access this habit',
+                    ],
+                ], 403);
             }
 
-            return $this->successResponse(new HabitResource($habit));
+            return ResponseHelperService::success(new HabitResource($habit));
         } catch (\Exception $e) {
-            return $this->errorResponse('server_error', $e->getMessage(), 500);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'server_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 500);
         }
     }
 
@@ -67,18 +92,33 @@ class HabitController extends Controller
             $habit = Habit::find($id);
 
             if (! $habit) {
-                return $this->errorResponse('not_found', 'Habit not found', 404);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'not_found',
+                        'message' => 'Habit not found',
+                    ],
+                ], 404);
             }
 
             if ($habit->user_id !== $request->attributes->get('user_id')) {
-                return $this->errorResponse('access_denied', 'You do not have permission to delete this habit', 403);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'access_denied',
+                        'message' => 'You do not have permission to delete this habit',
+                    ],
+                ], 403);
             }
 
             $habit->delete();
 
-            return $this->successResponse(null, 204); // 204 No Content
+            return ResponseHelperService::success(null, 204); // 204 No Content
         } catch (\Exception $e) {
-            return $this->errorResponse('server_error', $e->getMessage(), 500);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'server_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 500);
         }
     }
 
@@ -88,11 +128,21 @@ class HabitController extends Controller
             $habit = Habit::find($id);
 
             if (! $habit) {
-                return $this->errorResponse('not_found', 'Habit not found', 404);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'not_found',
+                        'message' => 'Habit not found',
+                    ],
+                ], 404);
             }
 
             if ($habit->user_id !== $request->attributes->get('user_id')) {
-                return $this->errorResponse('access_denied', 'You do not have permission to update this habit', 403);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'access_denied',
+                        'message' => 'You do not have permission to update this habit',
+                    ],
+                ], 403);
             }
 
             $validatedData = $request->validate([
@@ -105,9 +155,14 @@ class HabitController extends Controller
                 'description' => $validatedData['description'] ?? $habit->description,
             ]);
 
-            return $this->successResponse(new HabitResource($habit));
+            return ResponseHelperService::success(new HabitResource($habit));
         } catch (\Exception $e) {
-            return $this->errorResponse('validation_error', $e->getMessage(), 400);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'validation_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 400);
         }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\ResponseHelperService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -14,7 +15,12 @@ class ValidateTokenMiddleware
         $token = $request->bearerToken();
 
         if (! $token) {
-            return $this->errorResponse('data_missing', 'Token not provided', 401);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'data_missing',
+                    'message' => 'Token not provided',
+                ],
+            ], 401);
         }
 
         $url = Config::get('services.validate_token.url');
@@ -25,37 +31,62 @@ class ValidateTokenMiddleware
                 'Content-Type' => 'application/json',
             ])->get($url);
 
-            // Проверка статуса ответа и валидности токена
-            if ($response->status() !== 200 || ! $response->json('valid')) {
-                return $this->errorResponse('invalid_token', 'Invalid or expired token', 403);
+            // Проверяем, что запрос прошёл успешно
+            if ($response->failed()) {
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'server_error',
+                        'message' => 'Failed to validate token. Service unavailable.',
+                    ],
+                ], 502); // Bad Gateway
             }
 
-            $userId = $response->json('user_id');
+            $responseData = $response->json();
+
+            // Проверяем структуру ответа
+            if (! isset($responseData['data']['valid'])) {
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'server_error',
+                        'message' => 'Unexpected response format from token validation service.',
+                    ],
+                ], 502);
+            }
+
+            $valid = $responseData['data']['valid'];
+
+            if (! $valid) {
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'invalid_token',
+                        'message' => 'Invalid or expired token.',
+                    ],
+                ]);
+            }
+
+            $userId = $responseData['data']['user_id'] ?? null;
 
             if (! $userId) {
-                return $this->errorResponse('not_found', 'Failed to retrieve user ID', 500);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'not_found',
+                        'message' => 'User ID not found in token validation response.',
+                    ],
+                ], 500);
             }
 
-            // Добавление user_id в запрос для дальнейшего использования
+            // Добавляем user_id в атрибуты запроса для дальнейшего использования
             $request->attributes->add(['user_id' => $userId]);
 
             return $next($request);
 
         } catch (\Exception $e) {
-            return $this->errorResponse('validation_error', 'Token validation error: '.$e->getMessage(), 500);
-        }
-    }
-
-    private function errorResponse(string $code, string $message, int $statusCode)
-    {
-        return response()->json([
-            'data' => null,
-            'errors' => [
+            return ResponseHelperService::error([
                 [
-                    'code' => $code,
-                    'message' => $message,
+                    'code' => 'server_error',
+                    'message' => 'Token validation error: '.$e->getMessage(),
                 ],
-            ],
-        ], $statusCode);
+            ], 500);
+        }
     }
 }

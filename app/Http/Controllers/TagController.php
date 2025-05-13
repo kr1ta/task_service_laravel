@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\TagResource;
 use App\Models\Tag;
+use App\Services\ResponseHelperService;
 use App\Services\TypeResolver;
 use Illuminate\Http\Request;
 
@@ -21,9 +22,14 @@ class TagController extends Controller
 
             \Log::info("in the tag create: {$tag}");
 
-            return $this->successResponse(new TagResource($tag), 201);
+            return ResponseHelperService::success(new TagResource($tag), 201);
         } catch (\Exception $e) {
-            return $this->errorResponse('validation_error', $e->getMessage(), 400);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'validation_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 400);
         }
     }
 
@@ -34,9 +40,14 @@ class TagController extends Controller
 
             $tags = Tag::where('user_id', $userId)->get();
 
-            return $this->successResponse(TagResource::collection($tags));
+            return ResponseHelperService::success(TagResource::collection($tags));
         } catch (\Exception $e) {
-            return $this->errorResponse('server_error', $e->getMessage(), 500);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'server_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 500);
         }
     }
 
@@ -46,16 +57,31 @@ class TagController extends Controller
             $tag = Tag::find($id);
 
             if (! $tag) {
-                return $this->errorResponse('not_found', 'Tag not found', 404);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'not_found',
+                        'message' => 'Tag not found',
+                    ],
+                ], 404);
             }
 
             if ($tag->user_id !== $request->attributes->get('user_id')) {
-                return $this->errorResponse('access_denied', 'You do not have permission to access this tag', 403);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'access_denied',
+                        'message' => 'You do not have permission to access this tag',
+                    ],
+                ], 403);
             }
 
-            return $this->successResponse(new TagResource($tag));
+            return ResponseHelperService::success(new TagResource($tag));
         } catch (\Exception $e) {
-            return $this->errorResponse('server_error', $e->getMessage(), 500);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'server_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 500);
         }
     }
 
@@ -65,18 +91,33 @@ class TagController extends Controller
             $tag = Tag::find($id);
 
             if (! $tag) {
-                return $this->errorResponse('not_found', 'Tag not found', 404);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'not_found',
+                        'message' => 'Tag not found',
+                    ],
+                ], 404);
             }
 
             if ($tag->user_id !== $request->attributes->get('user_id')) {
-                return $this->errorResponse('access_denied', 'You do not have permission to delete this tag', 403);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'access_denied',
+                        'message' => 'You do not have permission to delete this tag',
+                    ],
+                ], 403);
             }
 
             $tag->delete();
 
-            return $this->successResponse(null, 204); // 204 No Content
+            return ResponseHelperService::success(null, 204); // 204 No Content
         } catch (\Exception $e) {
-            return $this->errorResponse('server_error', $e->getMessage(), 500);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'server_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 500);
         }
     }
 
@@ -86,22 +127,37 @@ class TagController extends Controller
             $tag = Tag::find($id);
 
             if (! $tag) {
-                return $this->errorResponse('not_found', 'Tag not found', 404);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'not_found',
+                        'message' => 'Tag not found',
+                    ],
+                ], 404);
             }
 
             if ($tag->user_id !== $request->attributes->get('user_id')) {
-                return $this->errorResponse('access_denied', 'You do not have permission to update this tag', 403);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'access_denied',
+                        'message' => 'You do not have permission to update this tag',
+                    ],
+                ], 403);
             }
 
-            $validatedData = $this->validateTaskData($request);
+            $validatedData = $this->validateTagData($request); // Исправлено: validateTagData вместо validateTaskData
 
             $tag->update([
                 'name' => $validatedData['name'],
             ]);
 
-            return $this->successResponse(new TagResource($tag));
+            return ResponseHelperService::success(new TagResource($tag));
         } catch (\Exception $e) {
-            return $this->errorResponse('validation_error', $e->getMessage(), 400);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'validation_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 400);
         }
     }
 
@@ -113,18 +169,33 @@ class TagController extends Controller
             $model = $modelClass::find($id);
 
             if (! $model) {
-                return $this->errorResponse('not_found', ucfirst($type).' not found', 404);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'not_found',
+                        'message' => ucfirst($type).' not found',
+                    ],
+                ], 404);
             }
 
             $tags = $model->tags;
 
             if ($tags->isEmpty()) {
-                return $this->errorResponse('not_found', 'Tags not found', 404);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'not_found',
+                        'message' => 'Tags not found',
+                    ],
+                ], 404);
             }
 
-            return $this->successResponse(TagResource::collection($tags));
+            return ResponseHelperService::success(TagResource::collection($tags));
         } catch (\Exception $e) {
-            return $this->errorResponse('server_error', $e->getMessage(), 500);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'server_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 500);
         }
     }
 
@@ -134,28 +205,48 @@ class TagController extends Controller
             $modelClass = TypeResolver::getModelClass($type);
 
             if (! $modelClass) {
-                return $this->errorResponse('invalid_input', 'Invalid type provided', 400);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'invalid_input',
+                        'message' => 'Invalid type provided',
+                    ],
+                ], 400);
             }
 
             $model = $modelClass::find($id);
 
             if (! $model) {
-                return $this->errorResponse('not_found', ucfirst($type).' not found', 404);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'not_found',
+                        'message' => ucfirst($type).' not found',
+                    ],
+                ], 404);
             }
 
             $tag = Tag::find($tag_id);
 
             if (! $tag) {
-                return $this->errorResponse('not_found', 'Tag not found', 404);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'not_found',
+                        'message' => 'Tag not found',
+                    ],
+                ], 404);
             }
 
             $model->tags()->syncWithoutDetaching($tag->id);
 
-            return $this->successResponse([
+            return ResponseHelperService::success([
                 'message' => 'Tag attached successfully to '.ucfirst($type),
             ]);
         } catch (\Exception $e) {
-            return $this->errorResponse('server_error', $e->getMessage(), 500);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'server_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 500);
         }
     }
 
@@ -167,20 +258,35 @@ class TagController extends Controller
             $model = $modelClass::find($id);
 
             if (! $model) {
-                return $this->errorResponse('not_found', ucfirst($type).' not found', 404);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'not_found',
+                        'message' => ucfirst($type).' not found',
+                    ],
+                ], 404);
             }
 
             $tag = Tag::find($tag_id);
 
             if (! $tag) {
-                return $this->errorResponse('not_found', 'Tag not found', 404);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'not_found',
+                        'message' => 'Tag not found',
+                    ],
+                ], 404);
             }
 
             $model->tags()->detach($tag_id);
 
-            return $this->successResponse(TagResource::collection($model->tags()->get()));
+            return ResponseHelperService::success(TagResource::collection($model->tags()->get()));
         } catch (\Exception $e) {
-            return $this->errorResponse('server_error', $e->getMessage(), 500);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'server_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 500);
         }
     }
 
@@ -192,7 +298,12 @@ class TagController extends Controller
             $tag = Tag::find($tag_id);
 
             if (! $tag) {
-                return $this->errorResponse('not_found', 'Tag not found', 404);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'not_found',
+                        'message' => 'Tag not found',
+                    ],
+                ], 404);
             }
 
             foreach (TypeResolver::allTypes() as $type => $modelClass) {
@@ -200,13 +311,18 @@ class TagController extends Controller
                 $allModels[$type] = $tag->$relationName()->get();
             }
 
-            return $this->successResponse($allModels);
+            return ResponseHelperService::success($allModels);
         } catch (\Exception $e) {
-            return $this->errorResponse('server_error', $e->getMessage(), 500);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'server_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 500);
         }
     }
 
-    private function validateTagData(Request $request)
+    private function validateTagData(Request $request): array
     {
         return $request->validate([
             'name' => 'required|string',

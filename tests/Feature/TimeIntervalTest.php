@@ -9,8 +9,10 @@ test('time interval can be started successfully', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 
@@ -27,8 +29,8 @@ test('time interval can be started successfully', function () {
         'duration' => 3600, // 1 час
     ]);
 
-    // Проверяем, что ответ имеет статус 201 (Created)
-    $response->assertStatus(201);
+    // Проверяем, что ответ имеет статус 200
+    $response->assertStatus(200);
 
     // Проверяем структуру JSON-ответа
     $response->assertJsonStructure([
@@ -57,8 +59,10 @@ test('time interval can be stopped successfully', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 

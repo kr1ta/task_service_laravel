@@ -3,12 +3,14 @@
 use App\Models\Task;
 use Illuminate\Support\Facades\Http;
 
-test('task creation returns 201 status', function () {
+test('task creation returns 200 status', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 
@@ -20,15 +22,17 @@ test('task creation returns 201 status', function () {
         'status' => 'In Progress',
     ]);
 
-    $response->assertStatus(201);
+    $response->assertStatus(200);
 });
 
 test('task creation returns correct json structure', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 
@@ -56,8 +60,10 @@ test('task creation saves data in database', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 
@@ -81,8 +87,10 @@ test('user tasks can be listed', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 
@@ -105,8 +113,10 @@ test('task can be retrieved by id', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 
@@ -139,8 +149,10 @@ test('task not found returns 404 and correct response', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 

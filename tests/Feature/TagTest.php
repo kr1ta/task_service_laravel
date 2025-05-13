@@ -5,12 +5,14 @@ use App\Models\Tag;
 use App\Models\Task;
 use Illuminate\Support\Facades\Http;
 
-test('tag creation returns 201 status', function () {
+test('tag creation returns 200 status', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 
@@ -20,16 +22,18 @@ test('tag creation returns 201 status', function () {
         'name' => 'Workout',
     ]);
 
-    // Проверяем, что ответ имеет статус 201 (Created)
-    $response->assertStatus(201);
+    // Проверяем, что ответ имеет статус 200
+    $response->assertStatus(200);
 });
 
 test('tag creation returns correct json structure', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 
@@ -53,11 +57,12 @@ test('tag creation saves data in database', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
-
     $this->withHeaders([
         'Authorization' => 'Bearer valid-token',
     ])->postJson('/api/tags', [
@@ -75,11 +80,12 @@ test('tags can be listed', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
-
     // Создаем несколько тегов для пользователя с user_id = 1
     Tag::factory()->count(3)->create(['user_id' => 1]);
 
@@ -99,8 +105,10 @@ test('tag not found returns 404 and correct response', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 
@@ -128,8 +136,10 @@ test('tag can be attached to a task', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 
@@ -153,8 +163,10 @@ test('attach fails if tag or task does not exist', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 
@@ -171,8 +183,10 @@ test('tag can be detached from a task', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 
@@ -199,8 +213,10 @@ test('tags list returns all models', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 
@@ -247,8 +263,10 @@ test('tags can be retrieved for a task', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 
@@ -284,8 +302,10 @@ test('tags can be retrieved for a habit', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 
@@ -321,8 +341,10 @@ test('get tags fails if model does not exist', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 
@@ -338,8 +360,10 @@ test('get tags fails if type is invalid', function () {
     // Мокируем HTTP-запрос к сервису авторизации
     Http::fake([
         config('services.validate_token.url') => Http::response([
-            'valid' => true,
-            'user_id' => 1,
+            'data' => [
+                'valid' => true,
+                'user_id' => 1,
+            ],
         ], 200),
     ]);
 

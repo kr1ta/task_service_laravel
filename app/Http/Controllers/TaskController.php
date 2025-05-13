@@ -6,6 +6,7 @@ use App\Events\StatusUpdated;
 use App\Events\TaskCreated;
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
+use App\Services\ResponseHelperService;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
@@ -28,9 +29,14 @@ class TaskController extends Controller
 
             event(new TaskCreated($task));
 
-            return $this->successResponse(new TaskResource($task), 201);
+            return ResponseHelperService::success(new TaskResource($task), 201);
         } catch (\Exception $e) {
-            return $this->errorResponse('validation_error', $e->getMessage(), 400);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'validation_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 400);
         }
     }
 
@@ -43,9 +49,14 @@ class TaskController extends Controller
                 ->with('tags')
                 ->get();
 
-            return $this->successResponse(TaskResource::collection($tasks));
+            return ResponseHelperService::success(TaskResource::collection($tasks));
         } catch (\Exception $e) {
-            return $this->errorResponse('server_error', $e->getMessage(), 500);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'server_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 500);
         }
     }
 
@@ -55,16 +66,31 @@ class TaskController extends Controller
             $task = Task::find($id);
 
             if (! $task) {
-                return $this->errorResponse('not_found', 'Task not found', 404);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'not_found',
+                        'message' => 'Task not found',
+                    ],
+                ], 404);
             }
 
             if ($task->user_id !== $request->attributes->get('user_id')) {
-                return $this->errorResponse('access_denied', 'You do not have permission to access this task', 403);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'access_denied',
+                        'message' => 'You do not have permission to access this task',
+                    ],
+                ], 403);
             }
 
-            return $this->successResponse(new TaskResource($task));
+            return ResponseHelperService::success(new TaskResource($task));
         } catch (\Exception $e) {
-            return $this->errorResponse('server_error', $e->getMessage(), 500);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'server_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 500);
         }
     }
 
@@ -74,11 +100,21 @@ class TaskController extends Controller
             $task = Task::find($id);
 
             if (! $task) {
-                return $this->errorResponse('not_found', 'Task not found', 404);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'not_found',
+                        'message' => 'Task not found',
+                    ],
+                ], 404);
             }
 
             if ($task->user_id !== $request->attributes->get('user_id')) {
-                return $this->errorResponse('access_denied', 'You do not have permission to update this task', 403);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'access_denied',
+                        'message' => 'You do not have permission to update this task',
+                    ],
+                ], 403);
             }
 
             $validatedData = $request->validate([
@@ -88,13 +124,11 @@ class TaskController extends Controller
             ]);
 
             if (isset($validatedData['status']) && $validatedData['status'] !== $task->status) {
-                event(new StatusUpdated(
-                    [
-                        'new_status' => $validatedData['status'],
-                        'update_type' => 'status',
-                        'user_id' => $request->attributes->get('user_id'),
-                    ]
-                ));
+                event(new StatusUpdated([
+                    'new_status' => $validatedData['status'],
+                    'update_type' => 'status',
+                    'user_id' => $request->attributes->get('user_id'),
+                ]));
             }
 
             $task->update([
@@ -103,9 +137,14 @@ class TaskController extends Controller
                 'status' => $validatedData['status'] ?? $task->status,
             ]);
 
-            return $this->successResponse(new TaskResource($task));
+            return ResponseHelperService::success(new TaskResource($task));
         } catch (\Exception $e) {
-            return $this->errorResponse('validation_error', $e->getMessage(), 400);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'validation_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 400);
         }
     }
 
@@ -115,18 +154,33 @@ class TaskController extends Controller
             $task = Task::find($id);
 
             if (! $task) {
-                return $this->errorResponse('not_found', 'Task not found', 404);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'not_found',
+                        'message' => 'Task not found',
+                    ],
+                ], 404);
             }
 
             if ($task->user_id !== $request->attributes->get('user_id')) {
-                return $this->errorResponse('access_denied', 'You do not have permission to delete this task', 403);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'access_denied',
+                        'message' => 'You do not have permission to delete this task',
+                    ],
+                ], 403);
             }
 
             $task->delete();
 
-            return $this->successResponse(null, 204); // 204 No Content
+            return ResponseHelperService::success(null, 204); // 204 No Content
         } catch (\Exception $e) {
-            return $this->errorResponse('server_error', $e->getMessage(), 500);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'server_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 500);
         }
     }
 }

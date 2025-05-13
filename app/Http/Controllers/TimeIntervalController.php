@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\IntervalStarted;
 use App\Events\IntervalStopped;
 use App\Models\TimeInterval;
+use App\Services\ResponseHelperService;
 use App\Services\TypeResolver;
 use Illuminate\Http\Request;
 
@@ -16,14 +17,24 @@ class TimeIntervalController extends Controller
             $validatedData = $this->validateStartRequest($request);
 
             if (! $this->isSupportedType($type) || ! $this->objectExists($type, $id)) {
-                return $this->handleErrorResponse('not_found', 'Unsupported type or object does not exist.', 400);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'not_found',
+                        'message' => 'Unsupported type or object does not exist.',
+                    ],
+                ], 400);
             }
 
             $modelClass = TypeResolver::getModelClass($type);
             $activeInterval = $this->getLatestInterval($modelClass, $id);
 
             if ($activeInterval && ! $this->isIntervalCompletedByDuration($activeInterval)) {
-                return $this->handleErrorResponse('conflict', 'Interval already started! Try to stop it!', 409);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'conflict',
+                        'message' => 'Interval already started! Try to stop it!',
+                    ],
+                ], 409);
             }
 
             $startTime = now();
@@ -42,9 +53,14 @@ class TimeIntervalController extends Controller
 
             event(new IntervalStarted($message));
 
-            return $this->successResponse($timeInterval, 201);
+            return ResponseHelperService::success($timeInterval, 201);
         } catch (\Exception $e) {
-            return $this->errorResponse('server_error', $e->getMessage(), 500);
+            return ResponseHelperService::error([
+                [
+                    'code' => 'server_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 500);
         }
     }
 
@@ -52,14 +68,24 @@ class TimeIntervalController extends Controller
     {
         try {
             if (! $this->isSupportedType($type) || ! $this->objectExists($type, $id)) {
-                return $this->handleErrorResponse('not_found', 'Unsupported type or object does not exist.', 400);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'not_found',
+                        'message' => 'Unsupported type or object does not exist.',
+                    ],
+                ], 400);
             }
 
             $modelClass = TypeResolver::getModelClass($type);
             $activeInterval = $this->getLatestInterval($modelClass, $id);
 
             if (! $activeInterval || $this->isIntervalCompletedByDuration($activeInterval)) {
-                return $this->handleErrorResponse('not_found', 'No active time interval found for the given object.', 404);
+                return ResponseHelperService::error([
+                    [
+                        'code' => 'not_found',
+                        'message' => 'No active time interval found for the given object.',
+                    ],
+                ], 404);
             }
 
             $spentTime = now()->diffInSeconds($activeInterval->start_time);
@@ -76,20 +102,25 @@ class TimeIntervalController extends Controller
 
             event(new IntervalStopped($message));
 
-            return $this->successResponse($activeInterval->fresh(), 200);
+            return ResponseHelperService::success($activeInterval->fresh(), 200);
         } catch (\Exception $e) {
-            return $this->errorResponse('server_error', $e->getMessage(), $e->getCode());
+            return ResponseHelperService::error([
+                [
+                    'code' => 'server_error',
+                    'message' => $e->getMessage(),
+                ],
+            ], 500);
         }
     }
 
-    private function validateStartRequest(Request $request)
+    private function validateStartRequest(Request $request): array
     {
         return $request->validate([
             'duration' => 'required|integer',
         ]);
     }
 
-    private function getLatestInterval($modelClass, $id)
+    private function getLatestInterval(string $modelClass, int $id): ?TimeInterval
     {
         return TimeInterval::where('intervalable_id', $id)
             ->where('intervalable_type', $modelClass)
@@ -97,8 +128,14 @@ class TimeIntervalController extends Controller
             ->first();
     }
 
-    private function buildMessageForEvent($type, $id, $duration, $modelClass, Request $request, $updateType)
-    {
+    private function buildMessageForEvent(
+        string $type,
+        int $id,
+        int $duration,
+        string $modelClass,
+        Request $request,
+        string $updateType
+    ): array {
         $modelInstance = $modelClass::find($id);
         $tags = $modelInstance->tags ?? [];
 
@@ -121,12 +158,12 @@ class TimeIntervalController extends Controller
         ];
     }
 
-    private function isSupportedType($type): bool
+    private function isSupportedType(string $type): bool
     {
         return in_array($type, ['tasks', 'habits']);
     }
 
-    private function objectExists($type, $id): bool
+    private function objectExists(string $type, int $id): bool
     {
         $tableName = TypeResolver::getTableName($type);
 
